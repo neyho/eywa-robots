@@ -1,0 +1,153 @@
+"""
+Website Monitor Robot Declarations
+
+This file defines the EYWA robot mutations for the website monitoring system.
+Deploy this to your EYWA instance to enable the robots.
+"""
+
+type Mutation {
+  """
+  Monitor a single website/product for changes
+  
+  This robot checks a specific URL and extracts data based on selectors,
+  then evaluates rules and sends alerts when conditions are met.
+  """
+  monitorWebsite(
+    # Target configuration
+    url: String!
+    @label(value: "Website URL")
+    @placeholder(value: "https://example.com/product")
+    
+    name: String!
+    @label(value: "Monitor Name")
+    @placeholder(value: "Product Name")
+    
+    css_selector: String
+    @label(value: "CSS Selector")
+    @placeholder(value: ".price-now, #product-price")
+    
+    xpath: String
+    @label(value: "XPath (Alternative)")
+    @placeholder(value: "//span[@class='price']")
+    
+    expected_type: MonitorType = CONTENT
+    @label(value: "What to Monitor")
+    
+    # Alert configuration
+    notification_email: String
+    @label(value: "Alert Email")
+    @placeholder(value: "alerts@example.com")
+    
+    notification_webhook: String
+    @label(value: "Webhook URL")
+    @placeholder(value: "https://hooks.slack.com/...")
+    
+    # Options
+    capture_screenshot: Boolean = true
+    @label(value: "Capture Screenshots")
+    
+    check_rules: Boolean = true
+    @label(value: "Evaluate Alert Rules")
+    
+  ): STDResult
+  @robot(
+    euuid: "monitor-website-001"
+    name: "Website Monitor"
+    task_message: "Monitoring {{name}} at {{url}}"
+  )
+  @form_input
+  @execute(commands: [
+    "cd node/website-monitor"
+    "npm install"
+    "node monitor.js"
+  ])
+  
+  """
+  Batch monitor multiple websites
+  
+  Process multiple monitoring targets from a CSV file or table selection.
+  Useful for monitoring competitor prices or tracking inventory across sites.
+  """
+  batchMonitorWebsites(
+    # Batch configuration
+    batch_size: Int = 10
+    @label(value: "Concurrent Checks")
+    
+    delay_seconds: Int = 2
+    @label(value: "Delay Between Checks")
+    
+    # Default notification settings
+    default_email: String
+    @label(value: "Default Alert Email")
+    
+    send_summary: Boolean = true
+    @label(value: "Send Summary Report")
+    
+  ): STDResult
+  @robot(
+    euuid: "batch-monitor-001"
+    name: "Batch Website Monitor"
+    task_message: "Monitoring {{batch_size}} websites"
+  )
+  @table_input(entity: "MonitorTarget")
+  @execute(commands: [
+    "cd node/website-monitor"
+    "npm install"
+    "node batch-monitor.js"
+  ])
+  
+  """
+  Process monitoring results and generate reports
+  
+  Analyzes historical monitoring data to identify trends,
+  generate charts, and send digest reports.
+  """
+  generateMonitorReport(
+    # Report configuration
+    period: ReportPeriod = DAILY
+    @label(value: "Report Period")
+    
+    include_charts: Boolean = true
+    @label(value: "Include Price Charts")
+    
+    recipients: [String]
+    @label(value: "Report Recipients")
+    @placeholder(value: '["manager@example.com", "team@example.com"]')
+    
+    format: ReportFormat = HTML
+    @label(value: "Report Format")
+    
+  ): STDResult
+  @robot(
+    euuid: "monitor-report-001"
+    name: "Monitor Report Generator"
+    task_message: "Generating {{period}} monitoring report"
+    schedule: "0 9 * * *"  # Daily at 9 AM
+  )
+  @execute(commands: [
+    "cd node/website-monitor"
+    "npm install"
+    "node report-generator.js"
+  ])
+}
+
+# Enum definitions for the robots
+enum MonitorType {
+  PRICE
+  AVAILABILITY
+  CONTENT
+  STATUS
+}
+
+enum ReportPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum ReportFormat {
+  HTML
+  PDF
+  CSV
+  JSON
+}

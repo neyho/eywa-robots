@@ -1,0 +1,20 @@
+{
+  "input": {
+    "url": "https://www.bestbuy.com/site/sony-playstation-5/6426149.p",
+    "name": "PlayStation 5",
+    "css_selector": ".add-to-cart-button",
+    "expected_type": "AVAILABILITY",
+    "capture_screenshot": true,
+    "check_rules": true,
+    "rules": [
+      {
+        "name": "Back in Stock",
+        "active": true,
+        "type": "AVAILABILITY",
+        "alert_severity": "CRITICAL"
+      }
+    ],
+    "notification_email": "user@example.com",
+    "notification_webhook": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+  }
+}
