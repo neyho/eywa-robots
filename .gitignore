@@ -1,0 +1,52 @@
+# Ignore common development files
+.DS_Store
+*.pyc
+__pycache__/
+node_modules/
+*.log
+.env
+.venv/
+venv/
+*.swp
+*.swo
+*~
+
+# Language-specific ignores
+# Python
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# Node.js
+package-lock.json
+yarn.lock
+npm-debug.log*
+
+# Ruby
+*.gem
+.bundle/
+vendor/bundle/
+
+# Go
+*.exe
+*.dll
+*.so
+*.dylib
+go.sum
+
+# Babashka/Clojure
+.cpcache/
+.nrepl-port
+.lsp/
+.clj-kondo/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# Test outputs
+test-results/
+coverage/
+*.coverage
