@@ -1,0 +1,9 @@
+{
+  "input": {
+    "interval": 30,
+    "cpu_threshold": 70.0,
+    "memory_threshold": 85.0,
+    "disk_threshold": 85.0,
+    "run_once": true
+  }
+}

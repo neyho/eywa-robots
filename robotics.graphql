@@ -51,7 +51,7 @@ type Mutation {
     
   ): STDResult
   @robot(
-    euuid: "monitor-website-001"
+    euuid: "581bcedf-32a6-49d9-9e4a-0fb7359bac06"
     name: "Website Monitor"
     task_message: "Monitoring {{name}} at {{url}}"
   )
@@ -85,7 +85,7 @@ type Mutation {
     
   ): STDResult
   @robot(
-    euuid: "batch-monitor-001"
+    euuid: "80ab69a9-b7a3-4948-be96-3e457ce3ba00"
     name: "Batch Website Monitor"
     task_message: "Monitoring {{batch_size}} websites"
   )
@@ -119,7 +119,7 @@ type Mutation {
     
   ): STDResult
   @robot(
-    euuid: "monitor-report-001"
+    euuid: "00b14146-e292-485d-930b-b6d287acc672"
     name: "Monitor Report Generator"
     task_message: "Generating {{period}} monitoring report"
     schedule: "0 9 * * *"  # Daily at 9 AM
@@ -150,4 +150,87 @@ enum ReportFormat {
   PDF
   CSV
   JSON
+}
+
+# ============================================
+# Simple Node.js Example Robots
+# ============================================
+
+type Mutation {
+  """
+  Simple Hello World Robot
+  
+  Demonstrates the basic EYWA robot lifecycle with minimal complexity.
+  Perfect for learning the fundamentals.
+  """
+  sayHello(
+    name: String
+    @label(value: "Your Name")
+    @placeholder(value: "John Doe")
+    
+    message: String
+    @label(value: "Custom Message")
+    @placeholder(value: "Hello from EYWA!")
+  ): STDResult
+  @robot(
+    euuid: "67ef4173-4f47-4f40-97dc-91d6ea7e53af"
+    name: "Simple Hello Robot"
+    task_message: "Saying hello to {{name}}"
+  )
+  @form_input
+  @execute(commands: [
+    "cd node/simple-example"
+    "npm install"
+    "node index.js"
+  ])
+  
+  """
+  User Greeter Robot
+  
+  Demonstrates GraphQL queries and mutations by finding and updating a user.
+  Shows how to interact with EYWA's data model.
+  """
+  greetUser(
+    userId: ID!
+    @label(value: "User ID")
+    @placeholder(value: "Select a user")
+    
+    greeting: String
+    @label(value: "Custom Greeting")
+    @placeholder(value: "Welcome back!")
+  ): STDResult
+  @robot(
+    euuid: "32be9ed6-2231-4e50-bb2b-057ddeeea7e2"
+    name: "Simple User Greeter"
+    task_message: "Greeting user {{userId}}"
+  )
+  @form_input
+  @execute(commands: [
+    "cd node/simple-example"
+    "npm install"
+    "node user-greeter.js"
+  ])
+  
+  """
+  Batch Data Processor
+  
+  Shows how to process data in batches with progress reporting and retry logic.
+  Demonstrates more advanced patterns while staying simple.
+  """
+  processDataBatch(
+    batchSize: Int = 10
+    @label(value: "Batch Size")
+    @placeholder(value: "10")
+  ): STDResult
+  @robot(
+    euuid: "41b89157-b44c-4b6b-ab0f-bd02579a1a3c"
+    name: "Simple Batch Processor"
+    task_message: "Processing in batches of {{batchSize}}"
+  )
+  @table_input(entity: "ProcessableItem")
+  @execute(commands: [
+    "cd node/simple-example"
+    "npm install"
+    "node batch-processor.js"
+  ])
 }

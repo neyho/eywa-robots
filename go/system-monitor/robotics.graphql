@@ -1,0 +1,43 @@
+type Mutation {
+  """
+  System monitor robot that collects real-time metrics including CPU, memory, disk usage,
+  and processes. Analyzes trends, detects anomalies, and creates alerts for critical conditions.
+  """
+  systemMonitor(
+    # Monitoring interval in seconds (default: 30)
+    interval: Int = 30
+    @label(value: "Monitoring Interval (seconds)")
+    @placeholder(value: "30")
+    
+    # CPU usage threshold for alerts (default: 80%)
+    cpu_threshold: Float = 80.0
+    @label(value: "CPU Alert Threshold (%)")
+    @placeholder(value: "80.0")
+    
+    # Memory usage threshold for alerts (default: 90%)
+    memory_threshold: Float = 90.0
+    @label(value: "Memory Alert Threshold (%)")
+    @placeholder(value: "90.0")
+    
+    # Disk usage threshold for alerts (default: 90%)
+    disk_threshold: Float = 90.0
+    @label(value: "Disk Alert Threshold (%)")
+    @placeholder(value: "90.0")
+    
+    # Run once or continuously (default: true for run once)
+    run_once: Boolean = true
+    @label(value: "Run Once")
+    @description(value: "If true, collects metrics once. If false, runs continuously.")
+  ): STDResult
+  @robot(
+    euuid: "system-monitor-001"
+    name: "System Monitor"
+    task_message: "Monitoring system metrics{{#if run_once}} (single run){{else}} every {{interval}} seconds{{/if}}"
+    schedule: "0 */30 * * *"  # Run every 30 minutes
+  )
+  @form_input
+  @execute(commands: [
+    "cd go/system-monitor"
+    "go run main.go"
+  ])
+}
