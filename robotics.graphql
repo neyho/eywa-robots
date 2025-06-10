@@ -34,19 +34,15 @@ type Mutation {
       # Target configuration
       url: String!
       @label(value: "Website URL")
-      @placeholder(value: "https://example.com/product")
 
       name: String!
       @label(value: "Monitor Name")
-      @placeholder(value: "Product Name")
 
       css_selector: String
       @label(value: "CSS Selector")
-      @placeholder(value: ".price-now, #product-price")
 
       xpath: String
       @label(value: "XPath (Alternative)")
-      @placeholder(value: "//span[@class='price']")
 
       expected_type: MonitorType = CONTENT
       @label(value: "What to Monitor")
@@ -54,11 +50,9 @@ type Mutation {
       # Alert configuration
       notification_email: String
       @label(value: "Alert Email")
-      @placeholder(value: "alerts@example.com")
 
       notification_webhook: String
       @label(value: "Webhook URL")
-      @placeholder(value: "https://hooks.slack.com/...")
 
       # Options
       capture_screenshot: Boolean = true
@@ -130,7 +124,6 @@ type Mutation {
 
       recipients: [String]
       @label(value: "Report Recipients")
-      @placeholder(value: "manager@example.com, team@example.com")
 
       format: ReportFormat = HTML
       @label(value: "Report Format")
@@ -157,11 +150,9 @@ type Mutation {
     sayHello(
       name: String
       @label(value: "Your Name")
-      @placeholder(value: "John Doe")
 
       message: String
       @label(value: "Custom Message")
-      @placeholder(value: "Hello from EYWA!")
     ): STDResult
     @robot(
       euuid: "67ef4173-4f47-4f40-97dc-91d6ea7e53af"
@@ -184,11 +175,9 @@ type Mutation {
     greetUser(
       userId: ID!
       @label(value: "User ID")
-      @placeholder(value: "Select a user")
 
       greeting: String
       @label(value: "Custom Greeting")
-      @placeholder(value: "Welcome back!")
     ): STDResult
     @robot(
       euuid: "32be9ed6-2231-4e50-bb2b-057ddeeea7e2"
@@ -211,7 +200,6 @@ type Mutation {
     processDataBatch(
       batchSize: Int = 10
       @label(value: "Batch Size")
-      @placeholder(value: "10")
     ): STDResult
     @robot(
       euuid: "41b89157-b44c-4b6b-ab0f-bd02579a1a3c"
@@ -235,11 +223,9 @@ type Mutation {
       # Analysis period
       days: Int = 7
       @label(value: "Days to Analyze")
-      @placeholder(value: "7, 14, 30")
 
       branch: String = "all"
       @label(value: "Branch Filter")
-      @placeholder(value: "main, develop, or 'all'")
 
       # Report options
       include_file_stats: Boolean = true
@@ -267,11 +253,9 @@ type Mutation {
       # Search parameters
       search_term: String!
       @label(value: "Search Term")
-      @placeholder(value: "EYWA, AI, robotics")
 
       regex_pattern: String!
       @label(value: "Regex Pattern")
-      @placeholder(value: "EYWA|eywa|Eywa")
 
       max_results: Int = 10
       @label(value: "Maximum Results")
