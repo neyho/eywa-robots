@@ -9,13 +9,11 @@ type Mutation {
     onGitUpdate: STDResult
     @execute(commands: [
       "echo '🚀 Setting up robot environments...'",
-      "# Python environment setup",
       "cd python",
       "python3 -m venv .venv",
       ".venv/bin/pip install --upgrade pip",
       ".venv/bin/pip install -r requirements.txt",
       "cd ..",
-      "# Go environment setup",
       "cd go/system-monitor",
       "GO111MODULE=on GOCACHE=/tmp/go-cache GOMODCACHE=/tmp/go-mod go mod download",
       "GO111MODULE=on GOCACHE=/tmp/go-cache GOMODCACHE=/tmp/go-mod go build -o system-monitor .",
