@@ -175,11 +175,10 @@ async def main():
     eywa.open_pipe()
     driver = None
 
-    print('hello')
     try:
         # Get task input
         task = await eywa.get_task()
-        input_data = task.get('input', {})
+        input_data = task.get('data', {})
 
         # Get parameters
         search_term = input_data.get('search_term', 'EYWA')
