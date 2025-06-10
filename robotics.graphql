@@ -268,7 +268,6 @@ type Mutation {
   )
   @form_input
   @execute(commands: [
-  @execute(commands: [
     "cd python"
     ".venv/bin/python git_analyzer.py"
   ])
