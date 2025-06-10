@@ -12,10 +12,10 @@ cd python
 .venv/bin/pip install --quiet -r requirements.txt
 cd ..
 
-# Go environment
+# Go environment - just download dependencies, don't compile
 cd go/system-monitor
 export GO111MODULE=on GOCACHE=/tmp/go-cache GOMODCACHE=/tmp/go-mod
-[ ! -f "system-monitor" ] && go build -o system-monitor .
+go mod download
 cd ../..
 
 echo "✅ Environment setup complete!"

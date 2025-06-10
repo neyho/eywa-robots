@@ -300,7 +300,7 @@ type Mutation {
     @form_input
     @execute(commands: [
       "cd go/system-monitor"
-      "./system-monitor"
+      "export GO111MODULE=on GOCACHE=/tmp/go-cache GOMODCACHE=/tmp/go-mod && go run ."
     ])
 
 }
