@@ -1,134 +1,340 @@
-"""
-Website Monitor Robot Declarations
-
-This file defines the EYWA robot mutations for the website monitoring system.
-Deploy this to your EYWA instance to enable the robots.
-"""
-
 type Mutation {
-  """
-  Monitor a single website/product for changes
-  
-  This robot checks a specific URL and extracts data based on selectors,
-  then evaluates rules and sends alerts when conditions are met.
-  """
-  monitorWebsite(
-    # Target configuration
-    url: String!
-    @label(value: "Website URL")
-    @placeholder(value: "https://example.com/product")
-    
-    name: String!
-    @label(value: "Monitor Name")
-    @placeholder(value: "Product Name")
-    
-    css_selector: String
-    @label(value: "CSS Selector")
-    @placeholder(value: ".price-now, #product-price")
-    
-    xpath: String
-    @label(value: "XPath (Alternative)")
-    @placeholder(value: "//span[@class='price']")
-    
-    expected_type: MonitorType = CONTENT
-    @label(value: "What to Monitor")
-    
-    # Alert configuration
-    notification_email: String
-    @label(value: "Alert Email")
-    @placeholder(value: "alerts@example.com")
-    
-    notification_webhook: String
-    @label(value: "Webhook URL")
-    @placeholder(value: "https://hooks.slack.com/...")
-    
-    # Options
-    capture_screenshot: Boolean = true
-    @label(value: "Capture Screenshots")
-    
-    check_rules: Boolean = true
-    @label(value: "Evaluate Alert Rules")
-    
-  ): STDResult
-  @robot(
-    euuid: "581bcedf-32a6-49d9-9e4a-0fb7359bac06"
-    name: "Website Monitor"
-    task_message: "Monitoring {{name}} at {{url}}"
-  )
-  @form_input
-  @execute(commands: [
-    "cd node/website-monitor"
-    "npm install"
-    "node monitor.js"
-  ])
-  
-  """
-  Batch monitor multiple websites
-  
-  Process multiple monitoring targets from a CSV file or table selection.
-  Useful for monitoring competitor prices or tracking inventory across sites.
-  """
-  batchMonitorWebsites(
-    # Batch configuration
-    batch_size: Int = 10
-    @label(value: "Concurrent Checks")
-    
-    delay_seconds: Int = 2
-    @label(value: "Delay Between Checks")
-    
-    # Default notification settings
-    default_email: String
-    @label(value: "Default Alert Email")
-    
-    send_summary: Boolean = true
-    @label(value: "Send Summary Report")
-    
-  ): STDResult
-  @robot(
-    euuid: "80ab69a9-b7a3-4948-be96-3e457ce3ba00"
-    name: "Batch Website Monitor"
-    task_message: "Monitoring {{batch_size}} websites"
-  )
-  @table_input(entity: "MonitorTarget")
-  @execute(commands: [
-    "cd node/website-monitor"
-    "npm install"
-    "node batch-monitor.js"
-  ])
-  
-  """
-  Process monitoring results and generate reports
-  
-  Analyzes historical monitoring data to identify trends,
-  generate charts, and send digest reports.
-  """
-  generateMonitorReport(
-    # Report configuration
-    period: ReportPeriod = DAILY
-    @label(value: "Report Period")
-    
-    include_charts: Boolean = true
-    @label(value: "Include Price Charts")
-    
-    recipients: [String]
-    @label(value: "Report Recipients")
-    @placeholder(value: "manager@example.com, team@example.com")
-    
-    format: ReportFormat = HTML
-    @label(value: "Report Format")
-    
-  ): STDResult
-  @robot(
-    euuid: "00b14146-e292-485d-930b-b6d287acc672"
-    name: "Monitor Report Generator"
-    task_message: "Generating {{period}} monitoring report"
-    schedule: "0 9 * * *"  # Daily at 9 AM
-  )
-  @execute(commands: [
-    "cd node/website-monitor"
-    "npm install"
-    "node report-generator.js"
-  ])
+    # ============================================
+    # Environment Setup Hook
+    # ============================================
+    """
+    Automatically setup environment for all robots when repository updates
+    This runs after git pull on any EYWA location
+    """
+    onGitUpdate: STDResult
+    @execute(commands: [
+      "echo '🚀 Setting up robot environments...'",
+      "# Python environment setup",
+      "cd python",
+      "python3 -m venv .venv",
+      ".venv/bin/pip install --upgrade pip",
+      ".venv/bin/pip install -r requirements.txt",
+      "cd ..",
+      "# Go environment setup",
+      "cd go/system-monitor",
+      "GO111MODULE=on GOCACHE=/tmp/go-cache GOMODCACHE=/tmp/go-mod go mod download",
+      "GO111MODULE=on GOCACHE=/tmp/go-cache GOMODCACHE=/tmp/go-mod go build -o system-monitor .",
+      "cd ../..",
+      "echo '✅ Environment setup complete!'"
+    ])
+
+
+    """
+    Monitor a single website/product for changes
+
+    This robot checks a specific URL and extracts data based on selectors,
+    then evaluates rules and sends alerts when conditions are met.
+    """
+    monitorWebsite(
+      # Target configuration
+      url: String!
+      @label(value: "Website URL")
+      @placeholder(value: "https://example.com/product")
+
+      name: String!
+      @label(value: "Monitor Name")
+      @placeholder(value: "Product Name")
+
+      css_selector: String
+      @label(value: "CSS Selector")
+      @placeholder(value: ".price-now, #product-price")
+
+      xpath: String
+      @label(value: "XPath (Alternative)")
+      @placeholder(value: "//span[@class='price']")
+
+      expected_type: MonitorType = CONTENT
+      @label(value: "What to Monitor")
+
+      # Alert configuration
+      notification_email: String
+      @label(value: "Alert Email")
+      @placeholder(value: "alerts@example.com")
+
+      notification_webhook: String
+      @label(value: "Webhook URL")
+      @placeholder(value: "https://hooks.slack.com/...")
+
+      # Options
+      capture_screenshot: Boolean = true
+      @label(value: "Capture Screenshots")
+
+      check_rules: Boolean = true
+      @label(value: "Evaluate Alert Rules")
+
+    ): STDResult
+    @robot(
+      euuid: "581bcedf-32a6-49d9-9e4a-0fb7359bac06"
+      name: "Website Monitor"
+      task_message: "Monitoring {{name}} at {{url}}"
+    )
+    @form_input
+    @execute(commands: [
+      "cd node/website-monitor"
+      "npm install"
+      "node monitor.js"
+    ])
+
+    """
+    Batch monitor multiple websites
+
+    Process multiple monitoring targets from a CSV file or table selection.
+    Useful for monitoring competitor prices or tracking inventory across sites.
+    """
+    batchMonitorWebsites(
+      # Batch configuration
+      batch_size: Int = 10
+      @label(value: "Concurrent Checks")
+
+      delay_seconds: Int = 2
+      @label(value: "Delay Between Checks")
+
+      # Default notification settings
+      default_email: String
+      @label(value: "Default Alert Email")
+
+      send_summary: Boolean = true
+      @label(value: "Send Summary Report")
+
+    ): STDResult
+    @robot(
+      euuid: "80ab69a9-b7a3-4948-be96-3e457ce3ba00"
+      name: "Batch Website Monitor"
+      task_message: "Monitoring {{batch_size}} websites"
+    )
+    @table_input(entity: "MonitorTarget")
+    @execute(commands: [
+      "cd node/website-monitor"
+      "npm install"
+      "node batch-monitor.js"
+    ])
+
+    """
+    Process monitoring results and generate reports
+
+    Analyzes historical monitoring data to identify trends,
+    generate charts, and send digest reports.
+    """
+    generateMonitorReport(
+      # Report configuration
+      period: ReportPeriod = DAILY
+      @label(value: "Report Period")
+
+      include_charts: Boolean = true
+      @label(value: "Include Price Charts")
+
+      recipients: [String]
+      @label(value: "Report Recipients")
+      @placeholder(value: "manager@example.com, team@example.com")
+
+      format: ReportFormat = HTML
+      @label(value: "Report Format")
+
+    ): STDResult
+    @robot(
+      euuid: "00b14146-e292-485d-930b-b6d287acc672"
+      name: "Monitor Report Generator"
+      task_message: "Generating {{period}} monitoring report"
+      schedule: "0 9 * * *"  # Daily at 9 AM
+    )
+    @execute(commands: [
+      "cd node/website-monitor"
+      "npm install"
+      "node report-generator.js"
+    ])
+
+    """
+    Simple Hello World Robot
+
+    Demonstrates the basic EYWA robot lifecycle with minimal complexity.
+    Perfect for learning the fundamentals.
+    """
+    sayHello(
+      name: String
+      @label(value: "Your Name")
+      @placeholder(value: "John Doe")
+
+      message: String
+      @label(value: "Custom Message")
+      @placeholder(value: "Hello from EYWA!")
+    ): STDResult
+    @robot(
+      euuid: "67ef4173-4f47-4f40-97dc-91d6ea7e53af"
+      name: "Simple Hello Robot"
+      task_message: "Saying hello to {{name}}"
+    )
+    @form_input
+    @execute(commands: [
+      "cd node/simple-example"
+      "npm install"
+      "node index.js"
+    ])
+
+    """
+    User Greeter Robot
+
+    Demonstrates GraphQL queries and mutations by finding and updating a user.
+    Shows how to interact with EYWA's data model.
+    """
+    greetUser(
+      userId: ID!
+      @label(value: "User ID")
+      @placeholder(value: "Select a user")
+
+      greeting: String
+      @label(value: "Custom Greeting")
+      @placeholder(value: "Welcome back!")
+    ): STDResult
+    @robot(
+      euuid: "32be9ed6-2231-4e50-bb2b-057ddeeea7e2"
+      name: "Simple User Greeter"
+      task_message: "Greeting user {{userId}}"
+    )
+    @form_input
+    @execute(commands: [
+      "cd node/simple-example"
+      "npm install"
+      "node user-greeter.js"
+    ])
+
+    """
+    Batch Data Processor
+
+    Shows how to process data in batches with progress reporting and retry logic.
+    Demonstrates more advanced patterns while staying simple.
+    """
+    processDataBatch(
+      batchSize: Int = 10
+      @label(value: "Batch Size")
+      @placeholder(value: "10")
+    ): STDResult
+    @robot(
+      euuid: "41b89157-b44c-4b6b-ab0f-bd02579a1a3c"
+      name: "Simple Batch Processor"
+      task_message: "Processing in batches of {{batchSize}}"
+    )
+    @table_input(entity: "ProcessableItem")
+    @execute(commands: [
+      "cd node/simple-example"
+      "npm install"
+      "node batch-processor.js"
+    ])
+
+    """
+    Analyze Git repository activity
+
+    Generates comprehensive reports about code contributions,
+    commit patterns, and development trends for this repository.
+    """
+    analyzeGitActivity(
+      # Analysis period
+      days: Int = 7
+      @label(value: "Days to Analyze")
+      @placeholder(value: "7, 14, 30")
+
+      branch: String = "all"
+      @label(value: "Branch Filter")
+      @placeholder(value: "main, develop, or 'all'")
+
+      # Report options
+      include_file_stats: Boolean = true
+      @label(value: "Include File Statistics")
+
+    ): STDResult
+    @robot(
+      euuid: "a3f4d5e6-1234-5678-9abc-def012345678"
+      name: "Git Activity Analyzer"
+      task_message: "Analyzing Git activity for last {{days}} days"
+    )
+    @form_input
+    @execute(commands: [
+      "cd python"
+      ".venv/bin/python git_analyzer.py"
+    ])
+
+    """
+    Scrape Hacker News for mentions matching a regex pattern
+
+    Searches posts and optionally comments for pattern matches,
+    using Selenium WebDriver for reliable data extraction.
+    """
+    scrapeHackerNews(
+      # Search parameters
+      search_term: String!
+      @label(value: "Search Term")
+      @placeholder(value: "EYWA, AI, robotics")
+
+      regex_pattern: String!
+      @label(value: "Regex Pattern")
+      @placeholder(value: "EYWA|eywa|Eywa")
+
+      max_results: Int = 10
+      @label(value: "Maximum Results")
+
+      check_comments: Boolean = false
+      @label(value: "Also Check Comments")
+      headless: Boolean = false
+      @label(value: "Run in Background (Headless)")
+
+    ): STDResult
+    @robot(
+      euuid: "b4c5d6e7-2345-6789-abcd-ef1234567890"
+      name: "Hacker News Scraper"
+      task_message: "Searching HN for {{regex_pattern}}"
+    )
+    @form_input
+    @execute(commands: [
+      "cd python"
+      ".venv/bin/python hn_scraper.py"
+    ])
+
+    """
+    System monitor robot that collects real-time metrics including CPU, memory, disk usage,
+    and processes. Analyzes trends, detects anomalies, and creates alerts for critical conditions.
+    """
+    systemMonitor(
+      # Monitoring interval in seconds (default: 30)
+      interval: Int = 30
+      @label(value: "Monitoring Interval (seconds)")
+      @placeholder(value: "30")
+
+      # CPU usage threshold for alerts (default: 80%)
+      cpu_threshold: Float = 80.0
+      @label(value: "CPU Alert Threshold (%)")
+      @placeholder(value: "80.0")
+
+      # Memory usage threshold for alerts (default: 90%)
+      memory_threshold: Float = 90.0
+      @label(value: "Memory Alert Threshold (%)")
+      @placeholder(value: "90.0")
+
+      # Disk usage threshold for alerts (default: 90%)
+      disk_threshold: Float = 90.0
+      @label(value: "Disk Alert Threshold (%)")
+      @placeholder(value: "90.0")
+
+      # Run once or continuously (default: true for run once)
+      run_once: Boolean = true
+      @label(value: "Run Once")
+      @description(value: "If true, collects metrics once. If false, runs continuously.")
+    ): STDResult
+    @robot(
+      euuid: "550e8400-e29b-41d4-a716-446655440001"
+      name: "System Monitor"
+      task_message: "Monitoring system metrics{{#if run_once}} (single run){{else}} every {{interval}} seconds{{/if}}"
+      schedule: "0 */30 * * *"  # Run every 30 minutes
+    )
+    @form_input
+    @execute(commands: [
+      "cd go/system-monitor"
+      "./system-monitor"
+    ])
+
 }
 
 # Enum definitions for the robots
@@ -152,239 +358,4 @@ enum ReportFormat {
   JSON
 }
 
-# ============================================
-# Simple Node.js Example Robots
-# ============================================
 
-type Mutation {
-  """
-  Simple Hello World Robot
-  
-  Demonstrates the basic EYWA robot lifecycle with minimal complexity.
-  Perfect for learning the fundamentals.
-  """
-  sayHello(
-    name: String
-    @label(value: "Your Name")
-    @placeholder(value: "John Doe")
-    
-    message: String
-    @label(value: "Custom Message")
-    @placeholder(value: "Hello from EYWA!")
-  ): STDResult
-  @robot(
-    euuid: "67ef4173-4f47-4f40-97dc-91d6ea7e53af"
-    name: "Simple Hello Robot"
-    task_message: "Saying hello to {{name}}"
-  )
-  @form_input
-  @execute(commands: [
-    "cd node/simple-example"
-    "npm install"
-    "node index.js"
-  ])
-  
-  """
-  User Greeter Robot
-  
-  Demonstrates GraphQL queries and mutations by finding and updating a user.
-  Shows how to interact with EYWA's data model.
-  """
-  greetUser(
-    userId: ID!
-    @label(value: "User ID")
-    @placeholder(value: "Select a user")
-    
-    greeting: String
-    @label(value: "Custom Greeting")
-    @placeholder(value: "Welcome back!")
-  ): STDResult
-  @robot(
-    euuid: "32be9ed6-2231-4e50-bb2b-057ddeeea7e2"
-    name: "Simple User Greeter"
-    task_message: "Greeting user {{userId}}"
-  )
-  @form_input
-  @execute(commands: [
-    "cd node/simple-example"
-    "npm install"
-    "node user-greeter.js"
-  ])
-  
-  """
-  Batch Data Processor
-  
-  Shows how to process data in batches with progress reporting and retry logic.
-  Demonstrates more advanced patterns while staying simple.
-  """
-  processDataBatch(
-    batchSize: Int = 10
-    @label(value: "Batch Size")
-    @placeholder(value: "10")
-  ): STDResult
-  @robot(
-    euuid: "41b89157-b44c-4b6b-ab0f-bd02579a1a3c"
-    name: "Simple Batch Processor"
-    task_message: "Processing in batches of {{batchSize}}"
-  )
-  @table_input(entity: "ProcessableItem")
-  @execute(commands: [
-    "cd node/simple-example"
-    "npm install"
-    "node batch-processor.js"
-  ])
-}
-
-# ============================================
-# Git Activity Analyzer Robot
-# ============================================
-
-type Mutation {
-  """
-  Analyze Git repository activity
-  
-  Generates comprehensive reports about code contributions,
-  commit patterns, and development trends for this repository.
-  """
-  analyzeGitActivity(
-    # Analysis period
-    days: Int = 7
-    @label(value: "Days to Analyze")
-    @placeholder(value: "7, 14, 30")
-    
-    branch: String = "all"
-    @label(value: "Branch Filter")
-    @placeholder(value: "main, develop, or 'all'")
-    
-    # Report options
-    include_file_stats: Boolean = true
-    @label(value: "Include File Statistics")
-    
-  ): STDResult
-  @robot(
-    euuid: "a3f4d5e6-1234-5678-9abc-def012345678"
-    name: "Git Activity Analyzer"
-    task_message: "Analyzing Git activity for last {{days}} days"
-  )
-  @form_input
-  @execute(commands: [
-    "cd python"
-    ".venv/bin/python git_analyzer.py"
-  ])
-}
-
-# ============================================
-# Hacker News Scraper Robot
-# ============================================
-
-type Mutation {
-  """
-  Scrape Hacker News for mentions matching a regex pattern
-  
-  Searches posts and optionally comments for pattern matches,
-  using Selenium WebDriver for reliable data extraction.
-  """
-  scrapeHackerNews(
-    # Search parameters
-    search_term: String!
-    @label(value: "Search Term")
-    @placeholder(value: "EYWA, AI, robotics")
-    
-    regex_pattern: String!
-    @label(value: "Regex Pattern")
-    @placeholder(value: "EYWA|eywa|Eywa")
-    
-    max_results: Int = 10
-    @label(value: "Maximum Results")
-    
-    check_comments: Boolean = false
-    @label(value: "Also Check Comments")    
-    headless: Boolean = false
-    @label(value: "Run in Background (Headless)")
-    
-  ): STDResult
-  @robot(
-    euuid: "b4c5d6e7-2345-6789-abcd-ef1234567890"
-    name: "Hacker News Scraper"
-    task_message: "Searching HN for {{regex_pattern}}"
-  )
-  @form_input
-  @execute(commands: [
-    "cd python"
-    ".venv/bin/python hn_scraper.py"
-  ])
-}
-
-# ============================================
-# Environment Setup Hook
-# ============================================
-
-type Mutation {
-  """
-  Automatically setup environment for all robots when repository updates
-  This runs after git pull on any EYWA location
-  """
-  onGitUpdate: STDResult
-  @execute(commands: [
-    "echo '🚀 Setting up robot environments...'",
-    "# Python environment setup",
-    "cd python",
-    "python3 -m venv .venv",
-    ".venv/bin/pip install --upgrade pip",
-    ".venv/bin/pip install -r requirements.txt",
-    "cd ..",
-    "# Go environment setup",
-    "cd go/system-monitor",
-    "GO111MODULE=on GOCACHE=/tmp/go-cache GOMODCACHE=/tmp/go-mod go mod download",
-    "GO111MODULE=on GOCACHE=/tmp/go-cache GOMODCACHE=/tmp/go-mod go build -o system-monitor .",
-    "cd ../..",
-    "echo '✅ Environment setup complete!'"
-  ])
-}
-# ============================================
-# Go System Monitor Robot
-# ============================================
-
-type Mutation {
-  """
-  System monitor robot that collects real-time metrics including CPU, memory, disk usage,
-  and processes. Analyzes trends, detects anomalies, and creates alerts for critical conditions.
-  """
-  systemMonitor(
-    # Monitoring interval in seconds (default: 30)
-    interval: Int = 30
-    @label(value: "Monitoring Interval (seconds)")
-    @placeholder(value: "30")
-    
-    # CPU usage threshold for alerts (default: 80%)
-    cpu_threshold: Float = 80.0
-    @label(value: "CPU Alert Threshold (%)")
-    @placeholder(value: "80.0")
-    
-    # Memory usage threshold for alerts (default: 90%)
-    memory_threshold: Float = 90.0
-    @label(value: "Memory Alert Threshold (%)")
-    @placeholder(value: "90.0")
-    
-    # Disk usage threshold for alerts (default: 90%)
-    disk_threshold: Float = 90.0
-    @label(value: "Disk Alert Threshold (%)")
-    @placeholder(value: "90.0")
-    
-    # Run once or continuously (default: true for run once)
-    run_once: Boolean = true
-    @label(value: "Run Once")
-    @description(value: "If true, collects metrics once. If false, runs continuously.")
-  ): STDResult
-  @robot(
-    euuid: "550e8400-e29b-41d4-a716-446655440001"
-    name: "System Monitor"
-    task_message: "Monitoring system metrics{{#if run_once}} (single run){{else}} every {{interval}} seconds{{/if}}"
-    schedule: "0 */30 * * *"  # Run every 30 minutes
-  )
-  @form_input
-  @execute(commands: [
-    "cd go/system-monitor"
-    "./system-monitor"
-  ])
-}
