@@ -317,7 +317,6 @@ type Mutation {
       # Run once or continuously (default: true for run once)
       run_once: Boolean = true
       @label(value: "Run Once")
-      @description(value: "If true, collects metrics once. If false, runs continuously.")
     ): STDResult
     @robot(
       euuid: "550e8400-e29b-41d4-a716-446655440001"
