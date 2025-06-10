@@ -112,7 +112,7 @@ type Mutation {
     
     recipients: [String]
     @label(value: "Report Recipients")
-    @placeholder(value: '["manager@example.com", "team@example.com"]')
+    @placeholder(value: '"manager@example.com, team@example.com"')
     
     format: ReportFormat = HTML
     @label(value: "Report Format")
