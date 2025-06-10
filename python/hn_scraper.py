@@ -178,6 +178,7 @@ async def main():
     try:
         # Get task input
         task = await eywa.get_task()
+        print('Received task:' + str(task))
         input_data = task.get('data', {})
 
         # Get parameters
