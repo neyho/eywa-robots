@@ -240,10 +240,10 @@ type Mutation {
     """
     scrapeHackerNews(
       # Search parameters
-      search_term: String!
+      search_term: String
       @label(value: "Search Term")
 
-      regex_pattern: String!
+      regex_pattern: String
       @label(value: "Regex Pattern")
 
       max_results: Int = 10
