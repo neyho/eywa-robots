@@ -175,6 +175,7 @@ async def main():
     eywa.open_pipe()
     driver = None
 
+    print('hello')
     try:
         # Get task input
         task = await eywa.get_task()
