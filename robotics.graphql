@@ -298,10 +298,16 @@ type Mutation {
       schedule: "0 */30 * * *"  # Run every 30 minutes
     )
     @form_input
-    @execute(commands: [
-      "cd go/system-monitor"
-      "./run.sh"
-    ])
+    @execute(
+      commands: [
+        "cd go/system-monitor",
+        "./system-monitor"
+      ],
+      windows: [
+        "cd go\system-monitor",
+        "system-monitor.exe"
+      ]
+    )
 
 }
 
