@@ -10,13 +10,20 @@
     "test:price-drop": "eywa run --task-file test-tasks/price-drop.json -c 'node monitor.js'",
     "test:availability": "eywa run --task-file test-tasks/availability.json -c 'node monitor.js'"
   },
-  "keywords": ["eywa", "robot", "rpa", "monitoring", "web-scraping"],
+  "keywords": [
+    "eywa",
+    "robot",
+    "rpa",
+    "monitoring",
+    "web-scraping"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "eywa-client": "latest",
-    "puppeteer": "^21.0.0",
     "cheerio": "^1.0.0-rc.12",
-    "node-fetch": "^3.3.2"
+    "eywa-client": "latest",
+    "node-fetch": "^3.3.2",
+    "playwright": "^1.52.0",
+    "puppeteer": "^21.11.0"
   }
 }

@@ -234,3 +234,158 @@ type Mutation {
     "node batch-processor.js"
   ])
 }
+
+# ============================================
+# Git Activity Analyzer Robot
+# ============================================
+
+type Mutation {
+  """
+  Analyze Git repository activity
+  
+  Generates comprehensive reports about code contributions,
+  commit patterns, and development trends for this repository.
+  """
+  analyzeGitActivity(
+    # Analysis period
+    days: Int = 7
+    @label(value: "Days to Analyze")
+    @placeholder(value: "7, 14, 30")
+    
+    branch: String = "all"
+    @label(value: "Branch Filter")
+    @placeholder(value: "main, develop, or 'all'")
+    
+    # Report options
+    include_file_stats: Boolean = true
+    @label(value: "Include File Statistics")
+    
+  ): STDResult
+  @robot(
+    euuid: "a3f4d5e6-1234-5678-9abc-def012345678"
+    name: "Git Activity Analyzer"
+    task_message: "Analyzing Git activity for last {{days}} days"
+  )
+  @form_input
+  @execute(commands: [
+  @execute(commands: [
+    "cd python"
+    ".venv/bin/python git_analyzer.py"
+  ])
+}
+
+# ============================================
+# Hacker News Scraper Robot
+# ============================================
+
+type Mutation {
+  """
+  Scrape Hacker News for mentions matching a regex pattern
+  
+  Searches posts and optionally comments for pattern matches,
+  using Selenium WebDriver for reliable data extraction.
+  """
+  scrapeHackerNews(
+    # Search parameters
+    search_term: String!
+    @label(value: "Search Term")
+    @placeholder(value: "EYWA, AI, robotics")
+    
+    regex_pattern: String!
+    @label(value: "Regex Pattern")
+    @placeholder(value: "EYWA|eywa|Eywa")
+    
+    max_results: Int = 10
+    @label(value: "Maximum Results")
+    
+    check_comments: Boolean = false
+    @label(value: "Also Check Comments")    
+    headless: Boolean = false
+    @label(value: "Run in Background (Headless)")
+    
+  ): STDResult
+  @robot(
+    euuid: "b4c5d6e7-2345-6789-abcd-ef1234567890"
+    name: "Hacker News Scraper"
+    task_message: "Searching HN for {{regex_pattern}}"
+  )
+  @form_input
+  @execute(commands: [
+    "cd python"
+    ".venv/bin/python hn_scraper.py"
+  ])
+}
+
+# ============================================
+# Environment Setup Hook
+# ============================================
+
+type Mutation {
+  """
+  Automatically setup environment for all robots when repository updates
+  This runs after git pull on any EYWA location
+  """
+  onGitUpdate: STDResult
+  @execute(commands: [
+    "echo '🚀 Setting up robot environments...'",
+    "# Python environment setup",
+    "cd python",
+    "python3 -m venv .venv",
+    ".venv/bin/pip install --upgrade pip",
+    ".venv/bin/pip install -r requirements.txt",
+    "cd ..",
+    "# Go environment setup",
+    "cd go/system-monitor",
+    "GO111MODULE=on GOCACHE=/tmp/go-cache GOMODCACHE=/tmp/go-mod go mod download",
+    "GO111MODULE=on GOCACHE=/tmp/go-cache GOMODCACHE=/tmp/go-mod go build -o system-monitor .",
+    "cd ../..",
+    "echo '✅ Environment setup complete!'"
+  ])
+}
+# ============================================
+# Go System Monitor Robot
+# ============================================
+
+type Mutation {
+  """
+  System monitor robot that collects real-time metrics including CPU, memory, disk usage,
+  and processes. Analyzes trends, detects anomalies, and creates alerts for critical conditions.
+  """
+  systemMonitor(
+    # Monitoring interval in seconds (default: 30)
+    interval: Int = 30
+    @label(value: "Monitoring Interval (seconds)")
+    @placeholder(value: "30")
+    
+    # CPU usage threshold for alerts (default: 80%)
+    cpu_threshold: Float = 80.0
+    @label(value: "CPU Alert Threshold (%)")
+    @placeholder(value: "80.0")
+    
+    # Memory usage threshold for alerts (default: 90%)
+    memory_threshold: Float = 90.0
+    @label(value: "Memory Alert Threshold (%)")
+    @placeholder(value: "90.0")
+    
+    # Disk usage threshold for alerts (default: 90%)
+    disk_threshold: Float = 90.0
+    @label(value: "Disk Alert Threshold (%)")
+    @placeholder(value: "90.0")
+    
+    # Run once or continuously (default: true for run once)
+    run_once: Boolean = true
+    @label(value: "Run Once")
+    @description(value: "If true, collects metrics once. If false, runs continuously.")
+  ): STDResult
+  @robot(
+    euuid: "550e8400-e29b-41d4-a716-446655440001"
+    name: "System Monitor"
+    task_message: "Monitoring system metrics{{#if run_once}} (single run){{else}} every {{interval}} seconds{{/if}}"
+    schedule: "0 */30 * * *"  # Run every 30 minutes
+  )
+  @form_input
+  @execute(commands: [
+    "cd go/system-monitor"
+    "./system-monitor"
+  ])
+}
