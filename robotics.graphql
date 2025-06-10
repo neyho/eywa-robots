@@ -301,22 +301,18 @@ type Mutation {
       # Monitoring interval in seconds (default: 30)
       interval: Int = 30
       @label(value: "Monitoring Interval (seconds)")
-      @placeholder(value: "30")
 
       # CPU usage threshold for alerts (default: 80%)
       cpu_threshold: Float = 80.0
       @label(value: "CPU Alert Threshold (%)")
-      @placeholder(value: "80.0")
 
       # Memory usage threshold for alerts (default: 90%)
       memory_threshold: Float = 90.0
       @label(value: "Memory Alert Threshold (%)")
-      @placeholder(value: "90.0")
 
       # Disk usage threshold for alerts (default: 90%)
       disk_threshold: Float = 90.0
       @label(value: "Disk Alert Threshold (%)")
-      @placeholder(value: "90.0")
 
       # Run once or continuously (default: true for run once)
       run_once: Boolean = true
@@ -357,5 +353,3 @@ enum ReportFormat {
   CSV
   JSON
 }
-
-
