@@ -181,6 +181,7 @@ async def main():
         eywa.info('Received task:' + str(task))
         input_data = task.get('data', {})
 
+        eywa.info('Data is:' + str(input_data))
         # Get parameters
         search_term = input_data.get('search_term', 'EYWA')
         regex_pattern = input_data.get('regex_pattern', r'EYWA|eywa')
