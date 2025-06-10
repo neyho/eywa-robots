@@ -258,7 +258,7 @@ type Mutation {
     @robot(
       euuid: "b4c5d6e7-2345-6789-abcd-ef1234567890"
       name: "Hacker News Scraper"
-      task_message: "Searching HN for {{regex_pattern}}"
+      task_message: "Searching HN"
     )
     @form_input
     @execute(commands: [
@@ -300,7 +300,7 @@ type Mutation {
     @form_input
     @execute(commands: [
       "cd go/system-monitor"
-      "export GO111MODULE=on GOCACHE=/tmp/go-cache GOMODCACHE=/tmp/go-mod && go run ."
+      "./run.sh"
     ])
 
 }
