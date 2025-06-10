@@ -10,6 +10,18 @@ import (
 	eywa "github.com/neyho/eywa-go"
 )
 
+// Helper function to get average disk usage percentage
+func getAvgDiskUsage(disks []monitor.DiskMetrics) float64 {
+	if len(disks) == 0 {
+		return 0.0
+	}
+	var total float64
+	for _, disk := range disks {
+		total += disk.UsedPercent
+	}
+	return total / float64(len(disks))
+}
+
 type TaskInput struct {
 	Interval        int     `json:"interval"`
 	CPUThreshold    float64 `json:"cpu_threshold"`
@@ -124,7 +136,29 @@ func main() {
 		topCPUProcesses := monitor.GetTopProcesses(metrics, false, 5)
 		topMemProcesses := monitor.GetTopProcesses(metrics, true, 5)
 		
-		eywa.Report("System metrics collected", map[string]interface{}{
+		// Create dynamic report message
+		reportMsg := fmt.Sprintf("System Monitor: CPU %.1f%%, Memory %.1f%%, Disk %.1f%%", 
+			metrics.CPU.UsagePercent,
+			metrics.Memory.UsedPercent,
+			getAvgDiskUsage(metrics.Disk))
+		
+		if len(alerts) > 0 {
+			reportMsg += fmt.Sprintf(" - %d ALERTS", len(alerts))
+			if len(alerts) == 1 {
+				reportMsg += fmt.Sprintf(": %s", alerts[0].Message)
+			} else {
+				// Add first alert category
+				reportMsg += fmt.Sprintf(" (%s", alerts[0].Category)
+				if len(alerts) > 1 {
+					reportMsg += fmt.Sprintf(" + %d more", len(alerts)-1)
+				}
+				reportMsg += ")"
+			}
+		} else {
+			reportMsg += " - All systems normal"
+		}
+		
+		eywa.Report(reportMsg, map[string]interface{}{
 			"iteration": iterations,
 			"timestamp": metrics.Timestamp,
 			"cpu": map[string]interface{}{
