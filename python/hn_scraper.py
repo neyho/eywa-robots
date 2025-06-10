@@ -228,6 +228,36 @@ async def main():
             'mode': 'headless' if headless else 'visible'
         }
 
+        # Create a detailed summary message
+        summary_parts = []
+        
+        # Add post matches summary
+        if post_matches:
+            summary_parts.append(f"Found {len(post_matches)} posts")
+            # Add top 3 post titles
+            top_posts = post_matches[:3]
+            if top_posts:
+                summary_parts.append("Top matches:")
+                for i, post in enumerate(top_posts, 1):
+                    title = post.get('title', 'No title')
+                    # Truncate long titles
+                    if len(title) > 60:
+                        title = title[:57] + "..."
+                    points = post.get('points', 0)
+                    comments = post.get('comments', 0)
+                    summary_parts.append(f"  {i}. {title} ({points} points, {comments} comments)")
+        else:
+            summary_parts.append("No matching posts found")
+        
+        # Add comment matches summary if applicable
+        if comment_matches:
+            summary_parts.append(f"\nAlso found {len(comment_matches)} matching comments")
+        
+        # Create the final message
+        summary_message = f"HN search '{search_term}' complete: " + summary_parts[0]
+        if len(summary_parts) > 1:
+            summary_message += "\n" + "\n".join(summary_parts[1:])
+
         # Store in EYWA
         # await eywa.graphql("""
         #     mutation($data: JSON) {
@@ -245,7 +275,7 @@ async def main():
         #     'count': report['total_matches']
         # })
         #
-        eywa.report("HN scraping complete", report)
+        eywa.report(summary_message, report)
 
         # Keep browser open for a few seconds in non-headless mode
         if not headless:
@@ -260,6 +290,7 @@ async def main():
     finally:
         if driver:
             eywa.info("Closing browser...")
+            eywa.close_task(eywa.SUCCESS)
             driver.quit()
 
 
