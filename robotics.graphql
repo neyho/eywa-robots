@@ -7,19 +7,10 @@ type Mutation {
     This runs after git pull on any EYWA location
     """
     onGitUpdate: STDResult
-    @execute(commands: [
-      "echo '🚀 Setting up robot environments...'",
-      "cd python",
-      "python3 -m venv .venv",
-      ".venv/bin/pip install --upgrade pip",
-      ".venv/bin/pip install -r requirements.txt",
-      "cd ..",
-      "cd go/system-monitor",
-      "GO111MODULE=on GOCACHE=/tmp/go-cache GOMODCACHE=/tmp/go-mod go mod download",
-      "GO111MODULE=on GOCACHE=/tmp/go-cache GOMODCACHE=/tmp/go-mod go build -o system-monitor .",
-      "cd ../..",
-      "echo '✅ Environment setup complete!'"
-    ])
+    @execute(
+      commands: ["bash scripts/setup.sh"],
+      windows: ["scripts\setup.bat"]
+    )
 
 
     """
