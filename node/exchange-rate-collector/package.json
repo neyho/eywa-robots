@@ -1,0 +1,19 @@
+{
+  "name": "exchange-rate-collector",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "keywords": ["eywa", "robot", "exchange-rates", "ecb"],
+  "author": "",
+  "license": "ISC",
+  "description": "EYWA robot to collect ECB exchange rates using Playwright",
+  "dependencies": {
+    "eywa-client": "*",
+    "playwright": "*",
+    "xml2js": "*"
+  }
+}

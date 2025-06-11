@@ -331,3 +331,53 @@ enum ReportFormat {
   CSV
   JSON
 }
+
+  """
+  Collects daily exchange rates from the European Central Bank (ECB).
+  Fetches XML data and stores rates in EYWA with EUR as base currency.
+  """
+  collectExchangeRates(
+    """Optional: Specific currencies to collect (default: all)"""
+    currencies: [String]
+    @label(value: "Filter Currencies")
+    
+    """Optional: Override data source (default: ECB)"""
+    source: String = "ECB"
+    @label(value: "Data Source")
+    
+    """Enable browser visibility for debugging"""
+    showBrowser: Boolean = true
+    @label(value: "Show Browser")
+  ): STDResult
+  @robot(
+    euuid: "7b9e4d2a-8c3f-4e5a-9d6b-1a2c3f4e5d6c"
+    name: "ECB Exchange Rate Collector"
+    task_message: "Collecting exchange rates from {{source}}"
+    schedule: "0 17 * * *"  # Daily at 17:00 (5 PM) - after ECB publishes at 16:00 CET
+  )
+  @form_input
+  @execute(commands: [
+    "cd node/exchange-rate-collector"
+    "npm install"
+    "node index.js"
+  ])
+
+  """
+  Handles post-deployment setup when the Git repository is updated.
+  Installs dependencies for all robot environments.
+  """
+  onGitUpdate: STDResult
+  @execute(
+    linux: [
+      "chmod +x scripts/setup.sh",
+      "scripts/setup.sh"
+    ],
+    windows: [
+      "scripts\\setup.bat"
+    ],
+    macos: [
+      "chmod +x scripts/setup.sh",
+      "scripts/setup.sh"
+    ]
+  )
+}

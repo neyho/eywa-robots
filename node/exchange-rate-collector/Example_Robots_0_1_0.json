@@ -1,0 +1,94 @@
+{
+  "~:euuid": "~ud402a260-98a7-4568-b686-91eaf03c6db7",
+  "~:name": "0.1.0",
+  "~:dataset": {
+    "~:euuid": "~ue17c2322-a82b-4528-89a7-d8a666149554",
+    "~:name": "Example Robots"
+  },
+  "~:model": {
+    "~#neyho.eywa.dataset.core.ERDModel": {
+      "~:entities": {
+        "~u048d8f7a-42e0-4337-846d-8da85f3f15ea": {
+          "~#neyho.eywa.dataset.core.ERDEntity": {
+            "~:name": "Example Exchange Rate",
+            "~:width": 208.75,
+            "~:original": null,
+            "~:type": "WEAK",
+            "~:euuid": "~u048d8f7a-42e0-4337-846d-8da85f3f15ea",
+            "~:clone": null,
+            "~:position": {
+              "~#neyho.eywa.modeling.core.Coordinate": {
+                "~:x": 0,
+                "~:y": 0
+              }
+            },
+            "~:configuration": null,
+            "~:attributes": [
+              {
+                "~#neyho.eywa.dataset.core.ERDEntityAttribute": {
+                  "~:euuid": "~u72e5a638-4b66-40ab-826e-1b12a6b772f2",
+                  "~:seq": 0,
+                  "~:name": "Base Currency",
+                  "~:constraint": "mandatory",
+                  "~:type": "string",
+                  "~:configuration": null,
+                  "~:active": true
+                }
+              },
+              {
+                "~#neyho.eywa.dataset.core.ERDEntityAttribute": {
+                  "~:euuid": "~u893d4ce1-fba2-4f19-898f-f6535fcff333",
+                  "~:seq": 1,
+                  "~:name": "Target Currency",
+                  "~:constraint": "mandatory",
+                  "~:type": "string",
+                  "~:configuration": null,
+                  "~:active": true
+                }
+              },
+              {
+                "~#neyho.eywa.dataset.core.ERDEntityAttribute": {
+                  "~:euuid": "~uc8b6572d-ef7f-4129-b90e-0df72b3c4d9b",
+                  "~:seq": 2,
+                  "~:name": "Rate",
+                  "~:constraint": "mandatory",
+                  "~:type": "float",
+                  "~:configuration": null,
+                  "~:active": true
+                }
+              },
+              {
+                "~#neyho.eywa.dataset.core.ERDEntityAttribute": {
+                  "~:euuid": "~ue44d5945-15db-420e-a411-1b7b6d948105",
+                  "~:seq": 3,
+                  "~:name": "Date",
+                  "~:constraint": "optional",
+                  "~:type": "timestamp",
+                  "~:configuration": null,
+                  "~:active": true
+                }
+              },
+              {
+                "~#neyho.eywa.dataset.core.ERDEntityAttribute": {
+                  "~:euuid": "~u8b4e3636-6393-4577-94fb-da21b391c699",
+                  "~:seq": 4,
+                  "~:name": "Source",
+                  "~:constraint": "optional",
+                  "~:type": "string",
+                  "~:configuration": null,
+                  "~:active": true
+                }
+              }
+            ],
+            "~:height": 154
+          }
+        }
+      },
+      "~:relations": null,
+      "~:configuration": null,
+      "~:clones": null,
+      "~:version": "1.0.0"
+    }
+  },
+  "~:deployed": false
+}
