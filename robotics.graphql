@@ -309,29 +309,6 @@ type Mutation {
       ]
     )
 
-}
-
-# Enum definitions for the robots
-enum MonitorType {
-  PRICE
-  AVAILABILITY
-  CONTENT
-  STATUS
-}
-
-enum ReportPeriod {
-  DAILY
-  WEEKLY
-  MONTHLY
-}
-
-enum ReportFormat {
-  HTML
-  PDF
-  CSV
-  JSON
-}
-
   """
   Collects daily exchange rates from the European Central Bank (ECB).
   Fetches XML data and stores rates in EYWA with EUR as base currency.
@@ -361,23 +338,25 @@ enum ReportFormat {
     "npm install"
     "node index.js"
   ])
+}
 
-  """
-  Handles post-deployment setup when the Git repository is updated.
-  Installs dependencies for all robot environments.
-  """
-  onGitUpdate: STDResult
-  @execute(
-    linux: [
-      "chmod +x scripts/setup.sh",
-      "scripts/setup.sh"
-    ],
-    windows: [
-      "scripts\\setup.bat"
-    ],
-    macos: [
-      "chmod +x scripts/setup.sh",
-      "scripts/setup.sh"
-    ]
-  )
+# Enum definitions for the robots
+enum MonitorType {
+  PRICE
+  AVAILABILITY
+  CONTENT
+  STATUS
+}
+
+enum ReportPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum ReportFormat {
+  HTML
+  PDF
+  CSV
+  JSON
 }
