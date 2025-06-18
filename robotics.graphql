@@ -340,6 +340,9 @@ type Mutation {
   ])
 }
 
+
+### THIS SHOULD BE VISIBLE IN NEW SYNCED REPO
+
 # Enum definitions for the robots
 enum MonitorType {
   PRICE
