@@ -49,6 +49,19 @@ if exist go (
     )
 )
 
+REM C# environment
+if exist csharp (
+    echo Setting up C# environments...
+    for /d %%d in (csharp\*) do (
+        if exist "%%d\*.csproj" (
+            echo   Restoring packages for %%~nxd...
+            cd "%%d"
+            dotnet restore --verbosity quiet
+            cd ..\..
+        )
+    )
+)
+
 REM Babashka environment
 if exist babashka (
     if exist babashka\deps.edn (

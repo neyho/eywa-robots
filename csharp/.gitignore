@@ -1,0 +1,37 @@
+# .NET Build outputs
+bin/
+obj/
+out/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+nupkg/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio
+.vs/
+*.vscode/
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# Debug files
+*.pdb
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp

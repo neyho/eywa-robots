@@ -338,6 +338,31 @@ type Mutation {
     "npm install"
     "node index.js"
   ])
+
+  """
+  Hello World C# Robot
+
+  A simple demonstration robot that shows basic EYWA C# client patterns.
+  Perfect for learning the fundamentals of EYWA robot development.
+  """
+  sayHelloCS(
+    # Input parameters
+    name: String
+    @label(value: "Your Name")
+
+    customMessage: String
+    @label(value: "Custom Greeting Message")
+  ): STDResult
+  @robot(
+    euuid: "c4f5e6d7-3456-7890-bcde-f23456789012"
+    name: "Hello World C# Robot"
+    task_message: "Saying {{customMessage}} to {{name}} in C#"
+  )
+  @form_input
+  @execute(commands: [
+    "cd csharp/hello-world"
+    "dotnet run"
+  ])
 }
 
 

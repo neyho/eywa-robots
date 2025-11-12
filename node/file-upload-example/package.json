@@ -1,0 +1,16 @@
+{
+  "name": "file-upload-example",
+  "version": "1.0.0",
+  "description": "EYWA robot for uploading files",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": ["eywa", "robot", "file", "upload"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "eywa-client": "latest"
+  }
+}

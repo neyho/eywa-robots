@@ -44,6 +44,19 @@ if [ -d "go" ] && [ -f "go/go.mod" ]; then
     cd ..
 fi
 
+# C# environment
+if [ -d "csharp" ]; then
+    echo "🔷 Setting up C# environments..."
+    for dir in csharp/*/; do
+        if [ -f "$dir"*.csproj ]; then
+            echo "  Restoring packages for $(basename "$dir")..."
+            cd "$dir"
+            dotnet restore --quiet
+            cd - > /dev/null
+        fi
+    done
+fi
+
 # Babashka environment
 if [ -d "babashka" ] && [ -f "babashka/deps.edn" ]; then
     echo "📦 Babashka environment ready (dependencies loaded at runtime)"

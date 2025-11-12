@@ -1,0 +1,11 @@
+{
+  "euuid": "550e8400-e29b-41d4-a716-446655441234",
+  "data": {
+    "sources": ["hackernews"],
+    "maxArticlesPerSource": 8,
+    "headless": true,
+    "categories": ["Technology", "AI & ML", "Programming", "Startups"],
+    "storeInEywa": true,
+    "testMode": true
+  }
+}
