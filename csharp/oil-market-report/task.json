@@ -4,34 +4,8 @@
   "type": "ROBOT",
   "priority": 1,
   "data": {
-    "alertThresholds": {
-      "brentHigh": 85.0,
-      "brentLow": 75.0,
-      "dailyChangePercent": 2.0,
-      "usdRsdChangePercent": 1.0
-    },
     "emailRecipients": [
-      "pricing-team@nis.rs",
-      "management@nis.rs"
-    ],
-    "sendEmailAlways": false,
-    "headless": false,
-    "outputPath": "/tmp/PetrolMarket_{date}.xlsx",
-    "smtp": {
-      "host": "smtp.mailtrap.io",
-      "port": 587,
-      "username": "your-mailtrap-username",
-      "password": "your-mailtrap-password",
-      "fromEmail": "robot@eywa.example.com",
-      "fromName": "EYWA Petrol Market Robot"
-    },
-    "dataSources": {
-      "brentUrl": "https://www.investing.com/commodities/brent-oil",
-      "wtiUrl": "https://www.investing.com/commodities/crude-oil",
-      "eurUsdUrl": "https://www.investing.com/currencies/eur-usd",
-      "usdRsdUrl": "https://webappcenter.nbs.rs/ExchangeRateWebApp/ExchangeRateRsd/IndexNew_Partial_IndikativniKurs"
-    },
-    "retryAttempts": 3,
-    "retryDelaySeconds": 5
+      "robi@neyho.com"
+    ]
   }
 }

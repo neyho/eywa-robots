@@ -1,0 +1,15 @@
+{
+  "outputPath": "C:/tmp/PetrolMarket_{timestamp}.xlsx",
+  "alertThresholds": {
+    "brentPriceChangePercent": 5.0,
+    "wtiPriceChangePercent": 5.0,
+    "eurUsdChangePercent": 2.0,
+    "usdRsdChangePercent": 1.0
+  },
+  "datasources": {
+    "brentUrl": "https://www.investing.com/commodities/brent-oil",
+    "wtiUrl": "https://www.investing.com/commodities/crude-oil",
+    "eurUsdUrl": "https://www.investing.com/currencies/eur-usd",
+    "usdRsdUrl": "https://webappcenter.nbs.rs/ExchangeRateWebApp/ExchangeRateRsd/IndexNew_Partial_IndikativniKurs"
+  }
+}

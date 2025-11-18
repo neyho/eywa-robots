@@ -26,4 +26,9 @@
     <PackageReference Include="MimeKit" Version="4.8.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Copy config.json to output directory -->
+    <None Include="config.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
