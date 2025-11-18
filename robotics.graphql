@@ -421,7 +421,7 @@ type Mutation {
   """
   generateOilMarketReport(
     # Email recipients for the report
-    emailRecipients: [String]!
+    emailRecipients: [String]
     @label(value: "Email Recipients")
   ): STDResult
   @robot(
