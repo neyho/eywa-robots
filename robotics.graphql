@@ -363,6 +363,78 @@ type Mutation {
     "cd csharp/hello-world"
     "dotnet run"
   ])
+
+  """
+  Simple Excel Report Generator
+
+  Creates a basic Excel spreadsheet with sample sales data and uploads it to EYWA filesystem.
+  Demonstrates Excel generation using EPPlus without COM complexity, organized by year/month folders.
+  """
+  generateSimpleExcelReport(
+    # Report title
+    title: String = "Sales Report"
+    @label(value: "Report Title")
+  ): STDResult
+  @robot(
+    euuid: "b0920246-95f8-4b07-a79b-6bb5472af391"
+    name: "Simple Excel Report Generator"
+    task_message: "Generating {{title}}"
+  )
+  @form_input
+  @execute(commands: [
+    "cd csharp/excel-simple"
+    "dotnet run"
+  ])
+
+  """
+  Hello World C# Robot
+
+  A simple demonstration robot showing basic EYWA C# client patterns.
+  Accepts a name and custom message, then generates a greeting with system diagnostics.
+  """
+  helloWorldCS(
+    # Your name
+    name: String = "World"
+    @label(value: "Your Name")
+
+    # Custom greeting message
+    customMessage: String = "Hello"
+    @label(value: "Custom Greeting Message")
+  ): STDResult
+  @robot(
+    euuid: "550e8400-e29b-41d4-a716-446655440000"
+    name: "Hello World C# Robot"
+    task_message: "Saying {{customMessage}} to {{name}}"
+  )
+  @form_input
+  @execute(commands: [
+    "cd csharp/hello-world"
+    "dotnet run"
+  ])
+
+  """
+  Oil Market Intelligence Report Robot
+
+  Collects oil market data (Brent, WTI crude prices) and exchange rates (EUR/USD, USD/RSD),
+  generates comprehensive Excel reports, and sends email notifications to specified recipients.
+  Monitors price thresholds and triggers alerts when significant market movements occur.
+  """
+  generateOilMarketReport(
+    # Email recipients for the report
+    emailRecipients: [String]!
+    @label(value: "Email Recipients")
+  ): STDResult
+  @robot(
+    euuid: "550e8400-e29b-41d4-a716-446655442001"
+    name: "Oil Market Intelligence Report"
+    task_message: "Generating Oil Market Report for {{emailRecipients.length}} recipient(s)"
+    schedule: "0 10 * * 1-5"  # Daily at 10 AM on weekdays
+  )
+  @form_input
+  @execute(commands: [
+    "cd csharp/oil-market-report"
+    "dotnet run"
+  ])
 }
 
 
