@@ -1,14 +1,15 @@
 /// <summary>
 /// Hello World EYWA Robot - C# Edition
-/// 
+///
 /// Demonstrates basic EYWA robot patterns according to CSHARP_GUIDE.md:
-/// - Dynamic Dictionary<string, object> approach  
+/// - Dynamic JsonNode approach for natural data access
 /// - Direct GraphQL queries
 /// - Task lifecycle management
 /// - Proper resource disposal
 /// - Protocol abstraction (not query abstraction)
 /// </summary>
 
+using System.Text.Json.Nodes;
 using EywaClient;
 using EywaClient.Core;
 
@@ -19,27 +20,26 @@ try
 {
     // Initialize EYWA communication pipe
     eywa.OpenPipe();
-    
-    // Get current task - returns Dictionary<string, object>
+
+    // Get current task - returns JsonNode in 0.2.3+
     var task = await eywa.Tasks.GetTaskAsync();
-    await eywa.Logger.InfoAsync("Hello World C# Robot started", new { taskId = task["euuid"] });
-    
+    await eywa.Logger.InfoAsync("Hello World C# Robot started", new { taskId = task?["euuid"] });
+
     // Update task status to processing
     await eywa.Tasks.UpdateTaskAsync(Status.Processing);
 
-    // Extract input parameters from task data - dynamic approach
+    // Extract input parameters from task data - natural JsonNode access
     string name = "World";
     string customMessage = "Hello";
-    
-    // Follow guide: Use dynamic access patterns with Dictionary<string, object>
-    if (task.ContainsKey("data") && task["data"] is Dictionary<string, object> inputData)
-    {
-        if (inputData.TryGetValue("name", out var nameValue))
-            name = nameValue?.ToString() ?? "World";
-            
-        if (inputData.TryGetValue("customMessage", out var messageValue))
-            customMessage = messageValue?.ToString() ?? "Hello";
-    }
+
+    // Use null-safe JsonNode indexer syntax
+    var nameValue = task?["data"]?["name"]?.GetValue<string>();
+    if (!string.IsNullOrEmpty(nameValue))
+        name = nameValue;
+
+    var messageValue = task?["data"]?["customMessage"]?.GetValue<string>();
+    if (!string.IsNullOrEmpty(messageValue))
+        customMessage = messageValue;
 
     // Core business logic
     await SayHello(eywa, name, customMessage);
@@ -79,16 +79,15 @@ static async Task SayHello(Eywa eywa, string name, string customMessage)
                     type
                 }
             }");
-        
-        // Access results dynamically - just like JavaScript! (guide line 90-94)
-        if (result["data"] is Dictionary<string, object> data && 
-            data["searchUser"] is List<object> users && users.Count > 0)
+
+        // Access GraphQL results - natural JsonNode syntax in 0.2.3+
+        var users = result?["data"]?["searchUser"]?.AsArray();
+        if (users != null && users.Count > 0)
         {
             var userCount = users.Count;
-            var firstUser = users[0] as Dictionary<string, object>;
-            var firstUserName = firstUser?["name"]?.ToString() ?? "Unknown";
-            
-            await eywa.Logger.InfoAsync("👋 Connected to EYWA successfully", new { 
+            var firstUserName = users[0]?["name"]?.GetValue<string>() ?? "Unknown";
+
+            await eywa.Logger.InfoAsync("👋 Connected to EYWA successfully", new {
                 activeUsersFound = userCount,
                 firstActiveUser = firstUserName,
                 graphqlWorking = true
@@ -117,7 +116,7 @@ static async Task SayHello(Eywa eywa, string name, string customMessage)
                     - **Timestamp:** {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC
                     - **Robot Language:** C#
                     - **Runtime:** .NET {Environment.Version}
-                    - **Dynamic Approach:** Dictionary<string, object> ✅
+                    - **Dynamic Approach:** JsonNode ✅
                     - **GraphQL Connection:** Working ✅
                     
                     ✅ **Status:** Completed successfully
@@ -133,7 +132,7 @@ static async Task SayHello(Eywa eywa, string name, string customMessage)
                             ["Custom Message", customMessage],
                             ["Execution Time", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")],
                             ["Robot Language", "C# (.NET)"],
-                            ["Data Approach", "Dynamic Dictionary<string, object>"],
+                            ["Data Approach", "Dynamic JsonNode"],
                             ["GraphQL Style", "Direct queries (no abstraction)"],
                             ["Status", "SUCCESS"]
                         }

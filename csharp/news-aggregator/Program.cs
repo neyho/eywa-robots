@@ -1,9 +1,10 @@
+using System.Text.Json.Nodes;
 using EywaClient;
+using EywaClient.Core;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using System.Text.RegularExpressions;
-using System.Text.Json;
 
 namespace NewsAggregator;
 
@@ -178,27 +179,23 @@ public class Program
         try
         {
             Console.WriteLine("🚀 EYWA News Aggregation Robot - Starting...");
-            
+
             // Initialize EYWA communication
             eywa.OpenPipe();
-            
+
             // Give pipe time to initialize
             await Task.Delay(100);
-            
+
             // Get task from EYWA
-            var task = await eywa.GetTask();
-            
-            // Extract task data
-            var taskData = task as Dictionary<string, object>;
-            var data = taskData?.GetValueOrDefault("data") as Dictionary<string, object>;
-            
-            // Parse task parameters
-            var maxArticles = GetTaskValue<int>(data, "maxArticlesPerSource", 8);
-            var headless = GetTaskValue<bool>(data, "headless", true);
-            var testMode = GetTaskValue<bool>(data, "testMode", false);
-            
-            eywa.Info($"📋 Task started - maxArticles: {maxArticles}, headless: {headless}, testMode: {testMode}");
-            eywa.UpdateTask("PROCESSING");
+            var task = await eywa.Tasks.GetTaskAsync();
+
+            // Parse task parameters - GetTaskAsync returns JsonNode in 0.2.3+
+            var maxArticles = task?["data"]?["maxArticlesPerSource"]?.GetValue<int>() ?? 8;
+            var headless = task?["data"]?["headless"]?.GetValue<bool>() ?? true;
+            var testMode = task?["data"]?["testMode"]?.GetValue<bool>() ?? false;
+
+            await eywa.Logger.InfoAsync($"📋 Task started - maxArticles: {maxArticles}, headless: {headless}, testMode: {testMode}");
+            await eywa.Tasks.UpdateTaskAsync(Status.Processing);
             
             Console.WriteLine("📰 EYWA News Aggregation Robot - SELENIUM EDITION! 🚀");
             Console.WriteLine("=========================================================");
@@ -209,16 +206,16 @@ public class Program
             try
             {
                 // Initialize Chrome WebDriver
-                eywa.Info("🚀 Initializing Chrome WebDriver...");
+                await eywa.Logger.InfoAsync("🚀 Initializing Chrome WebDriver...");
                 driver = WebDriverManager.CreateChromeDriver(headless);
-                eywa.Info("✅ Chrome WebDriver initialized successfully");
-                
+                await eywa.Logger.InfoAsync("✅ Chrome WebDriver initialized successfully");
+
                 // Scrape Hacker News
-                eywa.Info("🔄 Starting Hacker News scraping...");
+                await eywa.Logger.InfoAsync("🔄 Starting Hacker News scraping...");
                 var articles = await HackerNewsScraper.ScrapeAsync(driver, maxArticles);
                 allArticles.AddRange(articles);
-                
-                eywa.Info($"✅ Hacker News: Found {articles.Count} articles");
+
+                await eywa.Logger.InfoAsync($"✅ Hacker News: Found {articles.Count} articles");
                 
                 // Sort by priority and engagement
                 var sortedArticles = allArticles
@@ -245,13 +242,13 @@ public class Program
                 //     }).ToList()
                 // };
                 // eywa.Report("News Aggregation Complete", reportData);
-                eywa.Info($"✨ News aggregation complete! Processed {allArticles.Count} articles");
-                eywa.CloseTask("SUCCESS");
+                await eywa.Logger.InfoAsync($"✨ News aggregation complete! Processed {allArticles.Count} articles");
+                await eywa.Tasks.CloseTaskAsync(Status.Success);
             }
             catch (Exception ex)
             {
-                eywa.Error($"❌ Error during news aggregation: {ex.Message}");
-                eywa.CloseTask("ERROR");
+                await eywa.Logger.ErrorAsync($"❌ Error during news aggregation: {ex.Message}");
+                await eywa.Tasks.CloseTaskAsync(Status.Error);
             }
             finally
             {
@@ -260,50 +257,19 @@ public class Program
                 {
                     driver?.Quit();
                     driver?.Dispose();
-                    eywa.Info("🔌 WebDriver disposed");
+                    await eywa.Logger.InfoAsync("🔌 WebDriver disposed");
                 }
                 catch (Exception ex)
                 {
-                    eywa.Info($"⚠️ Error disposing WebDriver: {ex.Message}");
+                    await eywa.Logger.InfoAsync($"⚠️ Error disposing WebDriver: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            eywa.Error($"❌ Fatal error: {ex.Message}");
-            eywa.CloseTask("ERROR");
+            await eywa.Logger.ErrorAsync($"❌ Fatal error: {ex.Message}");
+            await eywa.Tasks.CloseTaskAsync(Status.Error);
         }
-    }
-
-    private static T GetTaskValue<T>(Dictionary<string, object>? data, string key, T defaultValue)
-    {
-        try
-        {
-            if (data?.TryGetValue(key, out var value) == true)
-            {
-                if (value is T directValue)
-                    return directValue;
-                
-                // Handle JsonElement conversion
-                if (value is JsonElement element)
-                {
-                    if (typeof(T) == typeof(int) && element.TryGetInt32(out var intVal))
-                        return (T)(object)intVal;
-                    if (typeof(T) == typeof(bool) && element.ValueKind == JsonValueKind.True)
-                        return (T)(object)true;
-                    if (typeof(T) == typeof(bool) && element.ValueKind == JsonValueKind.False)
-                        return (T)(object)false;
-                    if (typeof(T) == typeof(string) && element.ValueKind == JsonValueKind.String)
-                        return (T)(object)element.GetString()!;
-                }
-            }
-        }
-        catch (Exception)
-        {
-            // Fall back to default
-        }
-        
-        return defaultValue;
     }
 
     private static void ShowNewsDigest(List<NewsArticle> articles)

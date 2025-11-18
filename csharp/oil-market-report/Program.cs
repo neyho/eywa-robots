@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Text.Json.Nodes;
 using EywaClient;
 using EywaClient.Core;
 using OilMarketReport.Models;
 using OilMarketReport.Services;
-using Newtonsoft.Json.Linq;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
 
 namespace OilMarketReport;
 
@@ -17,6 +19,9 @@ class Program
 {
     static async Task Main(string[] args)
     {
+        // EPPlus requires license context
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
         using var eywa = new Eywa();
         
         try
@@ -118,50 +123,69 @@ class Program
     /// Parse task data JSON into typed configuration
     /// EYWA Task structure: { euuid, message, type, priority, data: {...} }
     /// </summary>
-    static RobotConfig ParseConfiguration(Dictionary<string, object> task)
+    static RobotConfig ParseConfiguration(JsonNode? task)
     {
         Console.WriteLine("[Config] Parsing task configuration...");
-        
-        // EYWA tasks have 'data' field, not 'input'
-        var data = task["data"] as JObject ?? new JObject();
-        
+
+        // EYWA tasks have 'data' field
+        var data = task?["data"];
+
         var config = new RobotConfig
         {
             // Alert thresholds
             AlertConfig = new AlertConfig
             {
-                BrentHighThreshold = data["alertThresholds"]?["brentHigh"]?.Value<decimal>() ?? 85.0m,
-                BrentLowThreshold = data["alertThresholds"]?["brentLow"]?.Value<decimal>() ?? 75.0m,
-                DailyChangePercentThreshold = data["alertThresholds"]?["dailyChangePercent"]?.Value<decimal>() ?? 2.0m,
-                UsdRsdChangeThreshold = data["alertThresholds"]?["usdRsdChangePercent"]?.Value<decimal>() ?? 1.0m
+                BrentHighThreshold = data?["alertThresholds"]?["brentHigh"]?.GetValue<decimal>() ?? 85.0m,
+                BrentLowThreshold = data?["alertThresholds"]?["brentLow"]?.GetValue<decimal>() ?? 75.0m,
+                DailyChangePercentThreshold = data?["alertThresholds"]?["dailyChangePercent"]?.GetValue<decimal>() ?? 2.0m,
+                UsdRsdChangeThreshold = data?["alertThresholds"]?["usdRsdChangePercent"]?.GetValue<decimal>() ?? 1.0m
             },
-            
+
             // Email configuration
-            EmailRecipients = data["emailRecipients"]?.ToObject<List<string>>() ?? new List<string>(),
-            SendEmailAlways = data["sendEmailAlways"]?.Value<bool>() ?? false,
-            
+            EmailRecipients = ParseStringList(data?["emailRecipients"]),
+            SendEmailAlways = data?["sendEmailAlways"]?.GetValue<bool>() ?? false,
+
             // Browser configuration
-            Headless = data["headless"]?.Value<bool>() ?? false,
-            
+            Headless = data?["headless"]?.GetValue<bool>() ?? false,
+
             // Output configuration
-            OutputPath = data["outputPath"]?.Value<string>() ?? "/tmp/PetrolMarket_{date}.xlsx",
-            
+            OutputPath = data?["outputPath"]?.GetValue<string>() ?? "/tmp/PetrolMarket_{date}.xlsx",
+
             // SMTP configuration (will be implemented in Phase 6)
-            SmtpHost = data["smtp"]?["host"]?.Value<string>() ?? "smtp.mailtrap.io",
-            SmtpPort = data["smtp"]?["port"]?.Value<int>() ?? 587,
-            SmtpUsername = data["smtp"]?["username"]?.Value<string>() ?? "",
-            SmtpPassword = data["smtp"]?["password"]?.Value<string>() ?? "",
-            
+            SmtpHost = data?["smtp"]?["host"]?.GetValue<string>() ?? "smtp.mailtrap.io",
+            SmtpPort = data?["smtp"]?["port"]?.GetValue<int>() ?? 587,
+            SmtpUsername = data?["smtp"]?["username"]?.GetValue<string>() ?? "",
+            SmtpPassword = data?["smtp"]?["password"]?.GetValue<string>() ?? "",
+
             // Retry configuration
-            RetryAttempts = data["retryAttempts"]?.Value<int>() ?? 3,
-            RetryDelaySeconds = data["retryDelaySeconds"]?.Value<int>() ?? 5
+            RetryAttempts = data?["retryAttempts"]?.GetValue<int>() ?? 3,
+            RetryDelaySeconds = data?["retryDelaySeconds"]?.GetValue<int>() ?? 5
         };
         
         Console.WriteLine($"[Config] Loaded: {config.EmailRecipients.Count} recipients, alerts={config.SendEmailAlways}, headless={config.Headless}");
-        
+
         return config;
     }
-    
+
+    /// <summary>
+    /// Parse JsonNode array to List of strings
+    /// </summary>
+    static List<string> ParseStringList(JsonNode? node)
+    {
+        var result = new List<string>();
+        if (node == null) return result;
+
+        var array = node.AsArray();
+        foreach (var item in array)
+        {
+            var value = item?.GetValue<string>();
+            if (!string.IsNullOrEmpty(value))
+                result.Add(value);
+        }
+
+        return result;
+    }
+
     /// <summary>
     /// Collect market data from web sources using Selenium
     /// </summary>
@@ -243,16 +267,105 @@ class Program
     }
     
     /// <summary>
-    /// Generate Excel report (TO BE IMPLEMENTED IN PHASE 5)
+    /// Generate Excel report with market data
     /// </summary>
     static async Task<string> GenerateExcelReport(Eywa eywa, MarketData data, RobotConfig config)
     {
-        // TODO: Phase 5 - Implement Excel generation with EPPlus
-        await eywa.Logger.WarnAsync("⚠️ Excel generation not yet implemented - using stub");
-        
         var outputPath = config.OutputPath.Replace("{date}", DateTime.Now.ToString("yyyy-MM-dd"));
-        await eywa.Logger.InfoAsync($"Excel report would be generated at: {outputPath}");
-        
+
+        using var package = new ExcelPackage();
+        var sheet = package.Workbook.Worksheets.Add("Market Summary");
+
+        // Title
+        sheet.Cells[1, 1].Value = "Oil Market Intelligence Report";
+        sheet.Cells[1, 1].Style.Font.Size = 16;
+        sheet.Cells[1, 1].Style.Font.Bold = true;
+
+        // Timestamp
+        sheet.Cells[2, 1].Value = $"Generated: {data.CollectionTime:yyyy-MM-dd HH:mm:ss}";
+
+        // Oil Prices
+        int row = 4;
+        sheet.Cells[row, 1].Value = "OIL PRICES";
+        sheet.Cells[row, 1].Style.Font.Bold = true;
+        row++;
+
+        sheet.Cells[row, 1].Value = "Product";
+        sheet.Cells[row, 2].Value = "Price";
+        sheet.Cells[row, 3].Value = "Change";
+        sheet.Cells[row, 4].Value = "Change %";
+        sheet.Cells[row, 1, row, 4].Style.Font.Bold = true;
+        row++;
+
+        if (data.Brent != null)
+        {
+            sheet.Cells[row, 1].Value = "Brent";
+            sheet.Cells[row, 2].Value = data.Brent.CurrentPrice;
+            sheet.Cells[row, 2].Style.Numberformat.Format = "$#,##0.00";
+            sheet.Cells[row, 3].Value = data.Brent.DailyChange;
+            sheet.Cells[row, 3].Style.Numberformat.Format = "$#,##0.00";
+            sheet.Cells[row, 4].Value = data.Brent.DailyChangePercent / 100;
+            sheet.Cells[row, 4].Style.Numberformat.Format = "0.00%";
+            row++;
+        }
+
+        if (data.WTI != null)
+        {
+            sheet.Cells[row, 1].Value = "WTI";
+            sheet.Cells[row, 2].Value = data.WTI.CurrentPrice;
+            sheet.Cells[row, 2].Style.Numberformat.Format = "$#,##0.00";
+            sheet.Cells[row, 3].Value = data.WTI.DailyChange;
+            sheet.Cells[row, 3].Style.Numberformat.Format = "$#,##0.00";
+            sheet.Cells[row, 4].Value = data.WTI.DailyChangePercent / 100;
+            sheet.Cells[row, 4].Style.Numberformat.Format = "0.00%";
+            row++;
+        }
+
+        // Exchange Rates
+        row += 2;
+        sheet.Cells[row, 1].Value = "EXCHANGE RATES";
+        sheet.Cells[row, 1].Style.Font.Bold = true;
+        row++;
+
+        sheet.Cells[row, 1].Value = "Pair";
+        sheet.Cells[row, 2].Value = "Rate";
+        sheet.Cells[row, 3].Value = "Change %";
+        sheet.Cells[row, 1, row, 3].Style.Font.Bold = true;
+        row++;
+
+        if (data.EurUsd != null)
+        {
+            sheet.Cells[row, 1].Value = "EUR/USD";
+            sheet.Cells[row, 2].Value = data.EurUsd.CurrentRate;
+            sheet.Cells[row, 2].Style.Numberformat.Format = "0.0000";
+            sheet.Cells[row, 3].Value = data.EurUsd.DailyChangePercent / 100;
+            sheet.Cells[row, 3].Style.Numberformat.Format = "0.00%";
+            row++;
+        }
+
+        if (data.UsdRsd != null)
+        {
+            sheet.Cells[row, 1].Value = "USD/RSD";
+            sheet.Cells[row, 2].Value = data.UsdRsd.CurrentRate;
+            sheet.Cells[row, 2].Style.Numberformat.Format = "0.0000";
+            sheet.Cells[row, 3].Value = data.UsdRsd.DailyChangePercent / 100;
+            sheet.Cells[row, 3].Style.Numberformat.Format = "0.00%";
+            row++;
+        }
+
+        // Auto-fit columns
+        sheet.Cells[sheet.Dimension.Address].AutoFitColumns();
+
+        // Save to file
+        var fileInfo = new FileInfo(outputPath);
+        if (fileInfo.Directory != null && !fileInfo.Directory.Exists)
+        {
+            fileInfo.Directory.Create();
+        }
+
+        await package.SaveAsAsync(fileInfo);
+        await eywa.Logger.InfoAsync($"Excel report saved: {outputPath} ({fileInfo.Length} bytes)");
+
         return outputPath;
     }
     

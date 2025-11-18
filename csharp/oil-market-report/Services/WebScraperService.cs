@@ -217,57 +217,69 @@ public class WebScraperService : IDisposable
         {
             Console.WriteLine($"[WebScraper] Navigating to EUR/USD: {url}");
             _driver.Navigate().GoToUrl(url);
-            
+
             await Task.Delay(2000);
-            
+
             var rate = new ExchangeRate
             {
                 Pair = "EUR/USD",
                 SourceUrl = url,
                 Timestamp = DateTime.Now
             };
-            
+
             try
             {
+                // Investing.com uses same structure as oil prices
                 var priceElement = FindElement(
                     By.CssSelector("[data-test='instrument-price-last']"),
-                    By.CssSelector(".text-2xl")
+                    By.CssSelector(".text-2xl"),
+                    By.XPath("//span[@data-test='instrument-price-last']")
                 );
-                
+
                 if (priceElement != null)
                 {
-                    var rateText = priceElement.Text.Replace(",", "").Trim();
-                    rate.CurrentRate = decimal.Parse(rateText);
+                    var priceText = priceElement.Text.Replace(",", "").Trim();
+                    rate.CurrentRate = decimal.Parse(priceText);
+                    Console.WriteLine($"[WebScraper] EUR/USD current rate: {rate.CurrentRate:F4}");
                 }
-                
-                var changeElement = FindElement(By.CssSelector("[data-test='instrument-price-change']"));
-                if (changeElement != null)
+                else
                 {
-                    var changeText = changeElement.Text.Replace("+", "").Trim();
-                    rate.DailyChange = decimal.Parse(changeText);
+                    throw new Exception("Could not find EUR/USD price element");
                 }
-                
-                var changePercentElement = FindElement(By.CssSelector("[data-test='instrument-price-change-percent']"));
-                if (changePercentElement != null)
+
+                // Try to get daily change percentage
+                try
                 {
-                    var percentText = changePercentElement.Text
-                        .Replace("+", "").Replace("-", "").Replace("%", "")
-                        .Replace("(", "").Replace(")", "").Trim();
-                    
-                    rate.DailyChangePercent = decimal.Parse(percentText);
-                    
-                    if (changePercentElement.Text.Contains("-"))
+                    var changePercentElement = FindElement(
+                        By.CssSelector("[data-test='instrument-price-change-percent']"),
+                        By.XPath("//span[@data-test='instrument-price-change-percent']")
+                    );
+
+                    if (changePercentElement != null)
                     {
-                        rate.DailyChange = -Math.Abs(rate.DailyChange);
-                        rate.DailyChangePercent = -Math.Abs(rate.DailyChangePercent);
+                        var percentText = changePercentElement.Text
+                            .Replace("+", "").Replace("%", "")
+                            .Replace("(", "").Replace(")", "").Trim();
+
+                        rate.DailyChangePercent = decimal.Parse(percentText);
+
+                        if (changePercentElement.Text.Contains("-"))
+                        {
+                            rate.DailyChangePercent = -Math.Abs(rate.DailyChangePercent);
+                        }
                     }
                 }
-                
-                rate.PreviousRate = rate.CurrentRate - rate.DailyChange;
+                catch
+                {
+                    rate.DailyChangePercent = 0;
+                }
+
+                rate.DailyChange = 0;
+                rate.PreviousRate = rate.CurrentRate;
                 rate.SevenDayAverage = rate.CurrentRate;
-                
+
                 Console.WriteLine($"[WebScraper] EUR/USD scraped successfully: {rate.CurrentRate:F4} ({rate.DailyChangePercent:+0.00;-0.00}%)");
-                
+
                 return rate;
             }
             catch (Exception ex)
@@ -280,62 +292,60 @@ public class WebScraperService : IDisposable
     }
     
     /// <summary>
-    /// Scrape USD/RSD exchange rate from National Bank of Serbia
+    /// Scrape USD/RSD exchange rate from National Bank of Serbia (NBS)
     /// </summary>
-    public async Task<ExchangeRate> ScrapeUsdRsd(string url = "https://www.nbs.rs/kursnaListaModul/srednjiKurs.faces")
+    public async Task<ExchangeRate> ScrapeUsdRsd(string url = "https://webappcenter.nbs.rs/ExchangeRateWebApp/ExchangeRateRsd/IndexNew_Partial_IndikativniKurs")
     {
         return await ScrapeWithRetry(async () =>
         {
             Console.WriteLine($"[WebScraper] Navigating to NBS for USD/RSD: {url}");
             _driver.Navigate().GoToUrl(url);
-            
-            await Task.Delay(3000); // NBS site may be slower
-            
+
+            await Task.Delay(3000); // Wait for page to load
+
             var rate = new ExchangeRate
             {
                 Pair = "USD/RSD",
                 SourceUrl = url,
                 Timestamp = DateTime.Now
             };
-            
+
             try
             {
-                // Look for USD in the exchange rate table
-                // NBS shows rates in format: USD | 1 | 109.5000
-                var rows = _driver.FindElements(By.CssSelector("table tr"));
-                
-                foreach (var row in rows)
+                // NBS displays rate in a table
+                // The page shows both EUR/RSD and USD/RSD
+                // We need to find specifically USD/RSD, not EUR/RSD
+
+                var pageText = _driver.FindElement(By.TagName("body")).Text;
+                Console.WriteLine($"[WebScraper] Looking for USD/RSD in page content...");
+
+                // Parse the rate using regex to find "USD/RSD" followed by numbers
+                // The format is typically: USD/RSD д-д м-м г-г опг \n 101,0306 ...
+                var match = System.Text.RegularExpressions.Regex.Match(
+                    pageText,
+                    @"USD/RSD[^\d]*?(\d{2,3}[,\.]\d{4})",
+                    System.Text.RegularExpressions.RegexOptions.Singleline
+                );
+
+                if (match.Success)
                 {
-                    var cells = row.FindElements(By.TagName("td"));
-                    if (cells.Count >= 3)
-                    {
-                        var currency = cells[0].Text.Trim();
-                        if (currency.Contains("USD") || currency.Contains("840"))
-                        {
-                            // Middle rate is typically in the 3rd or 4th column
-                            var rateText = cells[2].Text.Replace(",", ".").Trim();
-                            rate.CurrentRate = decimal.Parse(rateText);
-                            
-                            Console.WriteLine($"[WebScraper] Found USD rate: {rate.CurrentRate:F2} RSD");
-                            break;
-                        }
-                    }
+                    var rateText = match.Groups[1].Value.Replace(",", ".").Trim();
+                    rate.CurrentRate = decimal.Parse(rateText);
+                    Console.WriteLine($"[WebScraper] USD/RSD current rate: {rate.CurrentRate:F4}");
                 }
-                
-                if (rate.CurrentRate == 0)
+                else
                 {
-                    throw new Exception("USD/RSD rate not found in NBS table");
+                    throw new Exception("Could not find USD/RSD rate in NBS page");
                 }
-                
-                // NBS doesn't show daily change, so we'll calculate it later if we have historical data
-                // For now, stub with small change
+
+                // NBS doesn't show daily change in this view
                 rate.DailyChange = 0;
                 rate.DailyChangePercent = 0;
                 rate.PreviousRate = rate.CurrentRate;
                 rate.SevenDayAverage = rate.CurrentRate;
-                
-                Console.WriteLine($"[WebScraper] USD/RSD scraped successfully: {rate.CurrentRate:F2}");
-                
+
+                Console.WriteLine($"[WebScraper] USD/RSD scraped successfully: {rate.CurrentRate:F4}");
+
                 return rate;
             }
             catch (Exception ex)

@@ -29,7 +29,7 @@
       "brentUrl": "https://www.investing.com/commodities/brent-oil",
       "wtiUrl": "https://www.investing.com/commodities/crude-oil",
       "eurUsdUrl": "https://www.investing.com/currencies/eur-usd",
-      "usdRsdUrl": "https://www.nbs.rs/kursnaListaModul/srednjiKurs.faces"
+      "usdRsdUrl": "https://webappcenter.nbs.rs/ExchangeRateWebApp/ExchangeRateRsd/IndexNew_Partial_IndikativniKurs"
     },
     "retryAttempts": 3,
     "retryDelaySeconds": 5

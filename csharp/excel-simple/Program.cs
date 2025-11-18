@@ -8,6 +8,8 @@
 using EywaClient;
 using EywaClient.Core;
 using OfficeOpenXml;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 // EPPlus requires license context
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -19,18 +21,18 @@ try
     eywa.OpenPipe();
     
     var task = await eywa.Tasks.GetTaskAsync();
-    var taskId = task["euuid"]?.ToString() ?? Guid.NewGuid().ToString();
-    
+    var taskId = task?["euuid"]?.GetValue<string>() ?? Guid.NewGuid().ToString();
+
     await eywa.Logger.InfoAsync("📊 Excel Simple Report Generator started", new { taskId });
-    
+
     await eywa.Tasks.UpdateTaskAsync(Status.Processing);
 
-    // Get report title from task data
+    // Get report title from task data - JsonNode in 0.2.3+
     string reportTitle = "Sales Report";
-    if (task.ContainsKey("data") && task["data"] is Dictionary<string, object> inputData)
+    var titleValue = task?["data"]?["title"]?.GetValue<string>();
+    if (!string.IsNullOrEmpty(titleValue))
     {
-        if (inputData.TryGetValue("title", out var titleValue))
-            reportTitle = titleValue?.ToString() ?? "Sales Report";
+        reportTitle = titleValue;
     }
 
     // Ensure folder structure exists in EYWA
@@ -101,7 +103,10 @@ static async Task<(string folderUuid, int matchedDepth)> FindDeepestMatchingFold
     for (int depth = pathComponents.Length; depth > 0; depth--)
     {
         var checkPath = "/" + string.Join("/", pathComponents.Take(depth));
-        
+        if (checkPath != "/")
+        {
+            checkPath += "/";
+        }
         // Use getFolder since path is unique
         var query = @"
             query GetFolder($path: String!) {
@@ -113,13 +118,12 @@ static async Task<(string folderUuid, int matchedDepth)> FindDeepestMatchingFold
         try
         {
             var result = await eywa.GraphQLAsync(query, new { path = checkPath });
-            var data = (Dictionary<string, object>)result["data"];
-            
-            // Check if folder exists
-            if (data["getFolder"] != null && data["getFolder"] is not System.Text.Json.JsonElement jsonNull)
+
+            // Access result - GraphQLAsync returns JsonNode in 0.2.3+
+            var folderNode = result?["data"]?["getFolder"];
+            if (folderNode != null)
             {
-                var folder = (Dictionary<string, object>)data["getFolder"];
-                var folderUuid = folder["euuid"]?.ToString() ?? Guid.NewGuid().ToString();
+                var folderUuid = folderNode["euuid"]?.GetValue<string>() ?? Guid.NewGuid().ToString();
                 return (folderUuid, depth);
             }
         }

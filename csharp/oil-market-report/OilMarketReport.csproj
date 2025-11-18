@@ -11,22 +11,19 @@
 
   <ItemGroup>
     <!-- EYWA Client for robot lifecycle -->
-    <PackageReference Include="EywaClient" Version="*" />
-    
+    <PackageReference Include="EywaClient" Version="0.2.3" />
+
     <!-- Web Scraping -->
     <PackageReference Include="Selenium.WebDriver" Version="4.15.0" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="119.0.6045.10500" />
     <PackageReference Include="Selenium.Support" Version="4.15.0" />
-    
+
     <!-- Excel Generation -->
     <PackageReference Include="EPPlus" Version="7.0.0" />
-    
+
     <!-- Email Sending - Updated to fix vulnerability -->
     <PackageReference Include="MailKit" Version="4.8.0" />
     <PackageReference Include="MimeKit" Version="4.8.0" />
-    
-    <!-- JSON Handling -->
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
 </Project>

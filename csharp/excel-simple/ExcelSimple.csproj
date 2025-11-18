@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EywaClient" Version="*" />
+    <PackageReference Include="EywaClient" Version="0.2.3" />
     <PackageReference Include="EPPlus" Version="7.5.3" />
   </ItemGroup>
 
