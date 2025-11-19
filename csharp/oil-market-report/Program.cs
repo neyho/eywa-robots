@@ -400,7 +400,7 @@ class Program
         await package.SaveAsAsync(memoryStream);
         memoryStream.Position = 0;
 
-        await eywa.Files.UploadStreamAsync(memoryStream, new Dictionary<string, object>
+        /* await eywa.Files.UploadStreamAsync(memoryStream, new Dictionary<string, object>
         {
             ["euuid"] = fileUuid,
             ["name"] = fileName,
@@ -410,6 +410,7 @@ class Program
         });
 
         await eywa.Logger.InfoAsync($"✅ Excel uploaded to EYWA: {eywaPath}", new { fileUuid, size = memoryStream.Length });
+        */
 
         return outputPath;
     }
