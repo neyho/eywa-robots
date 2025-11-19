@@ -389,6 +389,7 @@ class Program
         await eywa.Logger.InfoAsync($"Excel report saved locally: {outputPath} ({fileInfo.Length} bytes)");
 
         // Upload to EYWA filesystem
+        /* 
         var folderUuid = await EnsureEywaReportFolderExists(eywa);
         var fileName = Path.GetFileName(outputPath);
         var fileUuid = Guid.NewGuid().ToString();
@@ -400,7 +401,7 @@ class Program
         await package.SaveAsAsync(memoryStream);
         memoryStream.Position = 0;
 
-        /* await eywa.Files.UploadStreamAsync(memoryStream, new Dictionary<string, object>
+        await eywa.Files.UploadStreamAsync(memoryStream, new Dictionary<string, object>
         {
             ["euuid"] = fileUuid,
             ["name"] = fileName,
