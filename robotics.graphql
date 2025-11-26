@@ -2,16 +2,6 @@ type Mutation {
     # ============================================
     # Environment Setup Hook
     # ============================================
-    """
-    Automatically setup environment for all robots when repository updates
-    This runs after git pull on any EYWA location
-    """
-    onGitUpdate: STDResult
-    @execute(
-      commands: ["bash scripts/setup.sh"],
-      windows: ["scripts\\setup.bat"]
-    )
-
 
     """
     Monitor a single website/product for changes
