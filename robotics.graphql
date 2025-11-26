@@ -435,6 +435,24 @@ type Mutation {
     "cd csharp/oil-market-report"
     "dotnet run"
   ])
+
+  """
+  File Upload Test Robot
+
+  Tests the EYWA Python client library file upload/download functionality.
+  Runs comprehensive tests including folder creation, text and JSON file uploads,
+  downloads, content verification, and error handling. Always cleans up test files.
+  """
+  testFileUpload: STDResult
+  @robot(
+    euuid: "f1e2d3c4-5a6b-7c8d-9e0f-1a2b3c4d5e6f"
+    name: "File Upload Test"
+    task_message: "Testing file upload/download functionality"
+  )
+  @execute(commands: [
+    "cd python"
+    ".venv/bin/python file_upload_test_robot.py"
+  ])
 }
 
 
