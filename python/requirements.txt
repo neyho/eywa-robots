@@ -1,5 +1,5 @@
 # EYWA Client
-eywa-client>=0.3.0
+eywa-client>=0.4.1
 
 # Web Scraping
 selenium>=4.0.0
