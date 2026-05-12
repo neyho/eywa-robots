@@ -443,6 +443,27 @@ type Mutation {
     "cd python"
     ".venv/bin/python file_upload_test_robot.py"
   ])
+
+  # ── eywa.dev.harness-robot stub (pure-shell, no runtime deps) ──
+  """
+  Pure-shell test robot. Echoes input and exits 0 so the task
+  lifecycle reaches COMPLETED with a deterministic stdout.
+  """
+  harnessShellEcho(
+    message: String
+    @label(value: "Echo message")
+  ): STDResult
+  @robot(
+    euuid: "7c4af554-1b99-4cee-9842-ff4ff3d0ec27"
+    name: "Harness Shell Echo"
+    task_message: "echo {{message}}"
+  )
+  @form_input
+  @execute(commands: [
+    "echo 'harness:start'"
+    "printf 'message=%s\\n' \"{{message}}\""
+    "echo 'harness:done'"
+  ])
 }
 
 
