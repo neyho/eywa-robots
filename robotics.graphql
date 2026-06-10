@@ -443,6 +443,21 @@ type Mutation {
     "cd python"
     ".venv/bin/python file_upload_test_robot.py"
   ])
+
+  """
+  platform-canary — health check proving the legacy synchronous eywa client
+  round-trips with the 2026.x platform through the full dispatch chain.
+  """
+  platformCanary: STDResult
+  @robot(
+    euuid: "ca0a1d00-0000-4000-8000-0000000ca0a1"
+    name: "Platform Canary"
+    task_message: "platform canary round-trip"
+  )
+  @execute(commands: [
+    "cd py/platform-canary"
+    "python3 canary.py"
+  ])
 }
 
 
